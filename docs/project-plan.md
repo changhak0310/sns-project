@@ -1,257 +1,163 @@
-# SNS MVP 구조 및 구현 계획
+# SNS Project Overview
 
-## 1. 최종 기능 범위
+## 1. 프로젝트 요약
 
-| Category | Include in MVP | Why |
+이 프로젝트는 `Next.js 16` 기반의 SNS 웹 서비스 MVP이다.  
+목표는 로그인 이후 홈 피드, 게시물 상세, 게시물 작성, 프로필/팔로우, 저장 기능까지 하나의 자연스러운 흐름으로 연결하고, 이후 탐색, 알림, 프로필 수정 기능까지 확장할 수 있는 구조를 만드는 것이다.
+
+현재 상태는 `기획/아키텍처 정리 + 개발 환경 세팅 완료` 단계이며, 실제 서비스 화면과 기능은 이제 본격적으로 구현해 나가야 하는 상태다.
+
+## 2. 현재 상태 한눈에 보기
+
+| 구분 | 상태 | 내용 |
 | --- | --- | --- |
-| Auth | Yes | 진입 지점과 세션 경계가 명확해야 한다. |
-| Home feed | Yes | 제품 경험의 중심이다. |
-| Post detail | Yes | 피드에서 더 깊은 소비 경험이 필요하다. |
-| Likes and comments | Yes | 반응이 있어야 SNS처럼 느껴진다. |
-| Create post | Yes | 생성이 빠지면 루프가 닫히지 않는다. |
-| Profile | Yes | 정체성과 아카이브는 인스타형 UX의 핵심이다. |
-| Follow | Yes | 범위는 작지만 사회적 맥락을 만든다. |
-| Search or explore | No | 있으면 좋지만 닫힌 사용자 흐름에는 필수는 아니다. |
-| Stories, reels, DM | No | 현재 마감 기준으로 비용이 너무 크다. |
+| 프로젝트 기본 세팅 | 완료 | `Next.js 16`, `React 19`, `TypeScript`, `Tailwind CSS 4`, `ESLint` 구성 완료 |
+| 필수 보조 라이브러리 설치 | 완료 | `clsx`, `tailwind-merge`, `class-variance-authority`, `lucide-react`, `bcryptjs`, `server-only` 추가 완료 |
+| 프로젝트 기획 문서 | 완료 | `docs/plan` 기준으로 기능/구조/라우트/디자인 시스템 문서 정리 완료 |
+| 프로젝트 구조 전환 | 진행 중 | 현재 스타터 구조를 `app / features / components / lib / data / types` 기준 구조로 전환 예정 |
+| 실제 서비스 화면 구현 | 예정 | 인증, 피드, 상세, 작성, 프로필 등 핵심 화면 미구현 |
+| 실제 데이터/세션 흐름 구현 | 예정 | seed data, repository, server action, session helper 미구현 |
 
-## 2. 핵심 라우트 맵
+## 3. 기능 목록과 진행 상태
 
-| Route | Purpose | Priority |
-| --- | --- | --- |
-| `/login` | 데모 계정 기반의 빠른 진입 | High |
-| `/` | 홈 피드 | High |
-| `/p/[postId]` | 게시물 상세와 댓글 | High |
-| `/create` | 게시물 작성 | High |
-| `/u/[username]` | 프로필 페이지 | High |
+### 1차 MVP
 
-## 3. 권장 폴더 구조
+| 기능 | 라우트 | 상태 | 설명 |
+| --- | --- | --- | --- |
+| 공통 기반과 서비스 셸 | 공통 | 진행 중 | 공통 레이아웃, 헤더, 모바일 하단 탭, 데스크톱 사이드바, 디자인 토큰 |
+| 회원가입 / 로그인 / 로그아웃 | `/signup`, `/login` | 예정 | 세션 생성, 보호 라우트 진입, 안전한 redirect 처리 |
+| 세션 가드 | 공통, `(main)` | 예정 | 로그인 필요 페이지 접근 제어 |
+| 홈 피드 | `/` | 예정 | 게시물 리스트, 게시물 카드, 피드 진입 화면 |
+| 게시물 상세 | `/p/[shortcode]` | 예정 | permalink 상세, 좋아요, 댓글 작성 |
+| 피드 오버레이 상세 | `/p/[shortcode]` | 예정 | 피드 위 modal/overlay 형태 상세 진입 |
+| 게시물 작성 | `/create` | 예정 | 이미지 선택, 캡션 입력, 게시물 생성 |
+| 프로필 / 팔로우 | `/u/[username]` | 예정 | 사용자 정보, 게시물 그리드, 팔로우 |
+| 저장 / 북마크 | `/u/[username]?tab=saved` | 예정 | 게시물 저장, Saved 탭 표시 |
+| 상태 UI | 공통 | 예정 | loading, empty, error, not-found, image fallback |
+| 마감 polish | 공통 | 예정 | 메타데이터, 반응형, 접근성, 시각 완성도 |
+
+### 2차 확장
+
+| 기능 | 라우트 | 상태 | 설명 |
+| --- | --- | --- | --- |
+| Explore Lite | `/explore` | 예정 | 추천 유저/추천 게시물 탐색 |
+| Notification Lite | `/notifications` | 예정 | 좋아요, 댓글, 팔로우 활동 피드 |
+| 프로필 수정 | `/u/[username]/edit` | 예정 | 프로필 이미지, 이름, bio 수정 |
+
+## 4. 현재 적용 스택
+
+### 런타임 / 프레임워크
+
+- `Node.js 20.9+`
+- `Next.js 16.2.3`
+- `React 19.2.4`
+- `React DOM 19.2.4`
+- `TypeScript 5`
+
+### 스타일 / UI
+
+- `Tailwind CSS 4`
+- `clsx`
+- `tailwind-merge`
+- `class-variance-authority`
+- `lucide-react`
+
+### 서버 / 인증 보조
+
+- `bcryptjs`
+- `server-only`
+
+### 개발 도구
+
+- `ESLint 9`
+- `eslint-config-next`
+
+## 5. 이번에 실제로 추가한 스택
+
+아래 패키지는 문서에만 적어두지 않고 이번에 실제 의존성으로 추가했다.
+
+| 패키지 | 추가 이유 |
+| --- | --- |
+| `clsx` | 공통 UI에서 조건부 className 조합 |
+| `tailwind-merge` | Tailwind class 충돌 정리 |
+| `class-variance-authority` | 버튼, 입력창, 탭 같은 variant 기반 공통 UI 구성 |
+| `lucide-react` | 헤더, 네비게이션, 액션 버튼용 아이콘 |
+| `bcryptjs` | 회원가입/로그인 시 비밀번호 해시 저장용 |
+| `server-only` | repository, query, action 같은 서버 전용 모듈 경계 분리 |
+
+## 6. 이 프로젝트에서 사용할 구조
 
 ```text
 app/
   (auth)/
-    login/
-      page.tsx
   (main)/
-    layout.tsx
-    page.tsx
-    create/
-      page.tsx
-    p/
-      [postId]/
-        page.tsx
-    u/
-      [username]/
-        page.tsx
-  globals.css
-  layout.tsx
-  not-found.tsx
+
+features/
+  auth/
+  feed/
+  post-detail/
+  post-compose/
+  profile/
+  explore/
+  notification/
 
 components/
-  auth/
-    login-form.tsx
-  feed/
-    feed-list.tsx
-    post-card.tsx
-  post/
-    post-detail.tsx
-    post-actions.tsx
-    comment-form.tsx
-    create-post-form.tsx
-  profile/
-    profile-header.tsx
-    profile-grid.tsx
-    follow-button.tsx
-  shared/
-    app-header.tsx
-    bottom-nav.tsx
-    empty-state.tsx
-    section-title.tsx
   ui/
-    button.tsx
-    avatar.tsx
-    input.tsx
-    textarea.tsx
-    badge.tsx
+  layout/
 
 lib/
   actions/
-    auth.ts
-    post.ts
-    interaction.ts
-    profile.ts
   queries/
-    feed.ts
-    post.ts
-    profile.ts
-  repositories/
-    mock/
-      data.ts
-      repository.ts
-    index.ts
+  social-repository/
   session/
-    auth.ts
-    cookies.ts
   validators/
-    auth.ts
-    post.ts
-    comment.ts
+  firebase/
   utils/
-    format.ts
-    time.ts
+
+data/
+  seed/
 
 types/
-  auth.ts
-  user.ts
-  post.ts
-  comment.ts
 ```
 
-## 4. 컴포넌트 구조
+## 7. 아키텍처 기준
 
-### 전역 레이아웃
+- 라우팅과 레이아웃 조합은 `app`에서 담당한다.
+- 기능별 UI와 상호작용은 `features`에서 담당한다.
+- 공통 UI와 레이아웃 조각은 `components`에서 담당한다.
+- 조회는 `Server Component + lib/queries + lib/social-repository` 흐름으로 처리한다.
+- 변경은 `Server Action + lib/actions + lib/social-repository` 흐름으로 처리한다.
+- 초기 데이터는 `data/seed`로 시작하고, 이후 `lib/firebase`를 통해 실제 백엔드로 교체 가능하게 설계한다.
+- `activeNav`, `activeTab`, `redirectTo`, `selectedShortcode` 같은 값은 전역 상태가 아니라 URL과 라우트에서 파생한다.
 
-- `app/layout.tsx`
-- `components/shared/app-header.tsx`
-- `components/shared/bottom-nav.tsx`
+## 8. 현재 코드베이스 기준 실제 상태
 
-### 피드 라우트
+현재 실제 코드베이스는 아직 스타터 상태에 가깝다.
 
-- `app/(main)/page.tsx`
-- `components/feed/feed-list.tsx`
-- `components/feed/post-card.tsx`
+- 현재 주요 실제 파일은 `app/layout.tsx`, `app/page.tsx`, `app/globals.css` 중심이다.
+- 기본 `create-next-app` 화면이 아직 남아 있다.
+- 서비스용 라우트인 `(auth)`, `(main)`, `@modal`, `features`, `lib`, `data` 구조는 아직 만들어지지 않았다.
+- 즉, 지금은 "서비스 구현 완료 단계"가 아니라 "서비스 구현을 위한 기반 준비 단계"라고 보는 것이 맞다.
 
-### 게시물 라우트
+## 9. 다음 구현 우선순위
 
-- `app/(main)/p/[postId]/page.tsx`
-- `components/post/post-detail.tsx`
-- `components/post/post-actions.tsx`
-- `components/post/comment-form.tsx`
+1. `app/(auth)`, `app/(main)` 구조 생성
+2. 공통 셸과 공통 UI 구축
+3. `data/seed`, `lib/social-repository`, `lib/session`, `lib/validators` 구성
+4. 회원가입 / 로그인 / 세션 가드 구현
+5. 홈 피드 / 게시물 상세 / 오버레이 상세 구현
+6. 게시물 작성 / 프로필 / 팔로우 / 저장 구현
+7. 상태 UI와 polish 정리
+8. Explore / Notification / Profile Edit 확장
 
-### 작성 라우트
+## 10. 최종 요약
 
-- `app/(main)/create/page.tsx`
-- `components/post/create-post-form.tsx`
+이 프로젝트는 인스타그램 스타일의 SNS MVP를 만드는 프로젝트다.  
+현재는 개발 환경 세팅과 문서 기준 정리가 끝난 상태이고, 실제 핵심 기능은 앞으로 구현해야 한다.
 
-### 프로필 라우트
+적용 스택은 지금 기준으로 `Next.js 16 + React 19 + TypeScript + Tailwind CSS 4`이며,  
+공통 UI와 인증 구현에 필요한 `clsx`, `tailwind-merge`, `class-variance-authority`, `lucide-react`, `bcryptjs`, `server-only`도 이미 추가해 두었다.
 
-- `app/(main)/u/[username]/page.tsx`
-- `components/profile/profile-header.tsx`
-- `components/profile/profile-grid.tsx`
-- `components/profile/follow-button.tsx`
-
-## 5. 상태관리 설계
-
-### 원칙
-
-- 서버 상태는 기본적으로 Server Component에서 조회한다.
-- 데이터 변경은 Server Action으로 처리한다.
-- 클라이언트 상태는 상호작용 UI에만 한정한다.
-- 진짜 막히는 지점이 생기기 전에는 전역 스토어를 도입하지 않는다.
-
-### 상태 소유권
-
-| State type | Owner | Tool |
-| --- | --- | --- |
-| Session | Server | cookies plus session helper |
-| Feed data | Server | page query function |
-| Post detail data | Server | page query function |
-| Profile data | Server | page query function |
-| Like pending state | Client island | `useTransition` or `useOptimistic` |
-| Comment form errors | Client | `useActionState` |
-| Create post draft | Client | local component state |
-| Global navigation state | Local layout client component only if needed | `useState` |
-
-### 권장 규칙
-
-- 시작은 Zustand 없이 간다.
-- 드래프트가 라우트 전환을 넘어 유지되어야 할 때만 Zustand를 검토한다.
-- 1차가 목업 데이터여도 데이터 권한은 서버 쪽 설계에 둔다.
-
-## 6. 데이터 모델 초안
-
-### User
-
-- `id`
-- `username`
-- `displayName`
-- `avatarUrl`
-- `bio`
-- `followerCount`
-- `followingCount`
-
-### Post
-
-- `id`
-- `authorId`
-- `imageUrl`
-- `caption`
-- `createdAt`
-- `likeCount`
-- `commentCount`
-
-### Comment
-
-- `id`
-- `postId`
-- `authorId`
-- `content`
-- `createdAt`
-
-### Like
-
-- `userId`
-- `postId`
-
-### Follow
-
-- `followerId`
-- `followingId`
-
-## 7. 구현 전략
-
-### 1차
-
-- 속도를 위해 시드 기반 목업 데이터로 먼저 만든다.
-- 저장소 인터페이스를 두어 이후 Supabase나 다른 백엔드로 교체 가능하게 한다.
-- 실제 파일 업로드는 1차 필수 조건이 아니라 확장 목표로 둔다.
-
-### 시간이 남으면 2차
-
-- 목업 저장소를 영속 백엔드로 교체
-- 실제 업로드 스토리지 추가
-- 모달형 상세 라우트나 탐색 페이지 추가
-
-## 8. 1차 구현 순서
-
-1. Global layout, design tokens, navigation, and mock data shape
-2. Login flow and session guard
-3. Home feed route
-4. Post detail with like and comment
-5. Create post form
-6. Profile and follow action
-7. Empty, loading, and error states
-8. Metadata and responsive polish
-
-## 9. Next.js 16 주의사항
-
-- `app` router만 사용한다.
-- `metadata` export는 Server Component에 둔다.
-- 데이터 변경은 Server Action을 우선한다.
-- 진짜 요청 핸들러가 필요할 때만 `route.ts`를 만든다.
-- 같은 세그먼트에 `page.tsx`와 `route.ts`를 함께 두지 않는다.
-- `"use client"` 경계는 작게 유지한다.
-- 외부 이미지를 쓰면 `next.config.ts`에 `images.remotePatterns`를 설정한다.
-
-## 10. 마감 전 polish 체크리스트
-
-- 피드, 상세, 작성, 프로필이 끝까지 이어서 동작한다.
-- 주요 페이지마다 로딩 상태와 빈 상태가 있다.
-- 폼 에러가 눈에 띄고 읽기 쉽다.
-- 모바일 레이아웃이 먼저 안정적이고, 데스크톱도 깨지지 않는다.
-- 이미지 비율이 안정적으로 유지된다.
-- 헤더, 간격, 타이포그래피가 의도적으로 보인다.
-- 메타데이터 title과 description이 커스텀되어 있다.
-- 데모 계정과 시드 콘텐츠의 톤이 일관된다.
-- 버튼에 hover, active, disabled 상태가 있다.
-- 키보드 포커스가 보인다.
-- 기본 not-found와 error 처리가 있다.
+핵심 기능은 인증, 피드, 상세, 작성, 프로필, 팔로우, 저장이고,  
+확장 기능은 탐색, 알림, 프로필 수정이다.  
+전체 구조는 `App Router + Server Component + Server Action + Repository` 패턴으로 진행한다.
