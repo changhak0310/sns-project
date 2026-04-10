@@ -1,4 +1,4 @@
-﻿# 기능 02 - 로그인
+# 기능 02 - 로그인
 
 ## 개요
 
@@ -123,7 +123,7 @@ features/
 
 | 항목 | 파일 |
 | --- | --- |
-| auth 레이아웃 | `app/(auth)/layout.tsx` (optional) |
+| auth 레이아웃 | `app/(auth)/layout.tsx` |
 | 로그인 페이지 | `app/(auth)/login/page.tsx` |
 | auth 셸 | `components/layout/auth-shell.tsx` |
 | auth 카드 | `features/auth/components/auth-form-card.tsx` |
@@ -205,134 +205,6 @@ success response (public API only)
 - `api-design.md` 기준으로 `route.ts`는 기본 경로가 아니라 공개 API가 필요할 때만 추가한다.
 - 웹 내부 로그인 성공은 JSON 응답보다 `redirect`가 우선이다.
 
-#### API 아키텍처 흐름
-
-```text
-web login flow
-  app/(auth)/login/page.tsx
-    -> features/auth/components/login-form.tsx
-    -> lib/actions/auth.ts::loginAction
-    -> lib/validators/auth.ts::validateLoginInput
-    -> lib/validators/auth.ts::validateRedirect
-    -> normalizeEmail(email)
-    -> lib/social-repository::findUserByEmail
-    -> verifyPassword(password, passwordHash)
-    -> lib/session::createAuthSession
-    -> redirect(redirectTo || "/")
-
-public API flow (optional)
-  POST /api/v1/auth/login
-    -> app/api/v1/auth/login/route.ts
-    -> lib/validators/auth.ts::validateLoginInput
-    -> lib/validators/auth.ts::validateRedirect
-    -> normalizeEmail(email)
-    -> lib/social-repository::findUserByEmail
-    -> verifyPassword(password, passwordHash)
-    -> lib/session::createAuthSession
-    -> JSON response
-```
-
-- 내부 웹 흐름은 `Client/Form -> Server Action -> SocialRepository -> Session -> Redirect` 구조를 따른다.
-- 공개 API를 열더라도 validator, repository, session helper는 같은 것을 재사용한다.
-- `page.tsx`나 `features/*`가 시드 데이터나 Firebase를 직접 호출하지 않는다.
-
-#### 데이터 플로우
-
-##### 라우트 입력 데이터 플로우
-
-```text
-searchParams.redirect
-  -> validateRedirect
-  -> redirectTo
-```
-
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부를 검증한다 | `redirectTo` |
-
-###### 예외 상황
-
-- 잘못된 `redirect`는 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
-- 외부 URL, protocol 포함 값, `//` 경로는 허용하지 않는다.
-
-##### 폼 입력 데이터 플로우
-
-```text
-email + password
-  -> validateLoginInput
-  -> fieldErrors or next step input
-```
-
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식과 빈 값을 검사한다 | `fieldErrors` 또는 다음 단계 입력 |
-
-###### 예외 상황
-
-- 입력 검증 실패 시 `fieldErrors`, `values`를 반환한다.
-- 공백 입력은 제출 불가로 처리한다.
-- 실패 시 사용자가 입력한 값은 유지한다.
-
-##### 인증 데이터 플로우
-
-```text
-email
-  -> normalizeEmail(email)
-  -> normalizedEmail
-  -> findUserByEmail(normalizedEmail)
-  -> user record
-  -> verifyPassword(password, passwordHash)
-  -> isPasswordValid
-```
-
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 이메일 정규화 | `email` | trim, lowercase 처리 | `normalizedEmail` |
-| 사용자 조회 | `normalizedEmail` | `findUserByEmail({ email: normalizedEmail })` | `user` 또는 `null` |
-| 비밀번호 검증 | `password`, `user.passwordHash` | `verifyPassword` 실행 | `isPasswordValid` |
-
-###### 예외 상황
-
-- 사용자 없음 또는 비밀번호 불일치는 같은 공통 인증 실패로 처리한다.
-- 인증 실패 시 `formError`, `values`를 반환한다.
-- 실패 메시지는 계정 존재 여부를 드러내지 않는다.
-
-##### 세션 데이터 플로우
-
-```text
-user
-  -> AuthSession
-  -> createAuthSession(user)
-  -> auth cookie
-```
-
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 인증 성공 데이터 정리 | `user` | 세션 저장용 최소 정보만 추출 | `AuthSession` |
-| 세션 저장 | `AuthSession` | `createAuthSession`으로 쿠키 저장 | `auth cookie` |
-
-###### 예외 상황
-
-- 세션 저장 실패 시 로그인 실패로 처리하고 공통 에러를 반환한다.
-- 세션에는 최소 식별 정보만 저장하고 비밀번호 정보는 포함하지 않는다.
-
-##### 완료 데이터 플로우
-
-```text
-redirectTo + auth cookie
-  -> redirect(redirectTo || "/")
-  -> logged-in destination
-```
-
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 최종 이동 | `redirectTo`, 세션 저장 결과 | 성공 시 `redirect(redirectTo || "/")` | 로그인 완료 화면 이동 |
-
-###### 예외 상황
-
-- `redirectTo`가 없으면 `/`로 이동한다.
-- 보호 라우트에서 온 사용자는 로그인 후 원래 내부 경로로 복귀해야 한다.
-
 #### 주요 상수와 함수
 
 ```text
@@ -378,6 +250,217 @@ functions
 5. `createAuthSession`이 로그인 상태를 저장한다.
 6. `getAuthSession`이 이후 페이지에서 로그인 상태를 읽는다.
 
+
+#### 데이터 플로우
+
+- 내부 웹 흐름은 `Client/Form -> Server Action -> SocialRepository -> Session -> Redirect` 구조를 따른다.
+- 공개 API를 열더라도 validator, repository, session helper는 같은 것을 재사용한다.
+- `page.tsx`나 `features/*`가 시드 데이터나 Firebase를 직접 호출하지 않는다.
+
+##### 라우트 입력 데이터 플로우
+
+```text
+searchParams.redirect
+  -> validateRedirect
+  -> redirectTo
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부를 검증한다 | `redirectTo` |
+
+###### 구현 규칙
+
+- `app/(auth)/login/page.tsx`는 로그인 화면의 진입점이다.
+- 페이지 진입 시 `searchParams.redirect`를 읽고, `validateRedirect`로 검증한 뒤 내부 값 `redirectTo`를 만든다.
+- 이미 로그인된 사용자는 로그인 폼을 보지 않고 `redirectTo` 또는 `/`로 즉시 이동한다.
+- auth 전용 레이아웃이 있으면 `app/(auth)/layout.tsx`에서 로그인 화면의 메타데이터와 독립 레이아웃만 처리한다.
+- 보호 라우트에서 넘어온 값만 읽고, 로그인 페이지가 직접 보호 라우트 판단을 다시 구현하지 않는다.
+
+###### API 아키텍처 흐름
+
+```text
+web
+  app/(auth)/login/page.tsx
+    -> searchParams.redirect
+    -> lib/validators/auth.ts::validateRedirect
+    -> redirectTo
+    -> lib/session::getAuthSession()
+    -> render login page or redirect
+
+public API (optional)
+  route query handling 없음
+```
+
+###### 예외 상황
+
+- 잘못된 `redirect`는 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
+- 외부 URL, protocol 포함 값, `//` 경로는 허용하지 않는다.
+
+##### 폼 입력 데이터 플로우
+
+```text
+email + password
+  -> validateLoginInput
+  -> fieldErrors or next step input
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식과 빈 값을 검사한다 | `fieldErrors` 또는 다음 단계 입력 |
+
+###### 구현 규칙
+
+- `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 담당한다.
+- `features/auth/components/auth-header.tsx`, `auth-form-card.tsx`, `auth-switch-link.tsx`는 로그인 화면 표현만 담당한다.
+- `components/ui/input.tsx`, `components/ui/button.tsx`는 공통 UI 프리미티브로 유지한다.
+- `components/layout/auth-shell.tsx`는 중앙 정렬과 폭 제어 같은 auth 화면 배치만 담당한다.
+- `redirectTo`는 폼 상태로 저장하지 않고 상위에서 파생한 값을 전달받아 사용한다.
+
+###### API 아키텍처 흐름
+
+```text
+web
+  features/auth/components/login-form.tsx
+    -> lib/actions/auth.ts::loginAction(formData)
+
+public API (optional)
+  POST /api/v1/auth/login
+    -> app/api/v1/auth/login/route.ts
+```
+
+###### 예외 상황
+
+- 입력 검증 실패 시 `fieldErrors`, `values`를 반환한다.
+- 공백 입력은 제출 불가로 처리한다.
+- 실패 시 사용자가 입력한 값은 유지한다.
+
+##### 인증 데이터 플로우
+
+```text
+email
+  -> normalizeEmail(email)
+  -> normalizedEmail
+  -> findUserByEmail(normalizedEmail)
+  -> user record
+  -> verifyPassword(password, passwordHash)
+  -> isPasswordValid
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 이메일 정규화 | `email` | trim, lowercase 처리 | `normalizedEmail` |
+| 사용자 조회 | `normalizedEmail` | `findUserByEmail({ email: normalizedEmail })` | `user` 또는 `null` |
+| 비밀번호 검증 | `password`, `user.passwordHash` | `verifyPassword` 실행 | `isPasswordValid` |
+
+###### 구현 규칙
+
+- 로그인은 이메일/비밀번호 기반으로 구현한다.
+- `validateLoginInput`은 이메일 형식과 비밀번호 빈 값을 검증한다.
+- `normalizeEmail`은 trim, lowercase 처리 후 조회 기준값으로 사용한다.
+- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는 공통 문구로 처리한다.
+- 제출 중에는 중복 제출을 막고, 실패 시 입력값은 유지한다.
+- `loginAction`이 로그인 mutation의 단일 진입점이다.
+- 사용자 조회는 `lib/social-repository/*`의 `findUserByEmail`만 사용한다.
+- 이메일 기준 조회 계약은 `findUserByEmail({ email: normalizedEmail })` 형태로 통일한다.
+- 비밀번호 검증은 `verifyPassword(password, passwordHash)`로 처리한다.
+- 1차 MVP는 seed 데이터로 시작할 수 있지만, 조회 방식은 repository 뒤에 숨긴다.
+
+###### API 아키텍처 흐름
+
+```text
+shared auth pipeline
+  -> lib/validators/auth.ts::validateLoginInput
+  -> normalizeEmail(email)
+  -> lib/social-repository::findUserByEmail
+  -> verifyPassword(password, passwordHash)
+```
+
+###### 예외 상황
+
+- 사용자 없음 또는 비밀번호 불일치는 같은 공통 인증 실패로 처리한다.
+- 인증 실패 시 `formError`, `values`를 반환한다.
+- 실패 메시지는 계정 존재 여부를 드러내지 않는다.
+
+##### 세션 데이터 플로우
+
+```text
+user
+  -> AuthSession
+  -> createAuthSession(user)
+  -> auth cookie
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 인증 성공 데이터 정리 | `user` | 세션 저장용 최소 정보만 추출 | `AuthSession` |
+| 세션 저장 | `AuthSession` | `createAuthSession`으로 쿠키 저장 | `auth cookie` |
+
+###### 구현 규칙
+
+- 인증 성공 시 `createAuthSession`으로 최소 식별 정보만 쿠키에 저장한다.
+- 세션 조회는 `getAuthSession()`으로만 처리한다.
+- 세션 쿠키 옵션은 `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 사용한다.
+- `secure` 옵션은 production에서 활성화한다.
+- 세션에는 `userId`, `email`, `username`, `displayName`만 포함하고 비밀번호 정보는 저장하지 않는다.
+
+###### API 아키텍처 흐름
+
+```text
+shared session pipeline
+  -> AuthSession mapping
+  -> lib/session::createAuthSession
+  -> auth cookie write
+```
+
+###### 예외 상황
+
+- 세션 저장 실패 시 로그인 실패로 처리하고 공통 에러를 반환한다.
+- 세션에는 최소 식별 정보만 저장하고 비밀번호 정보는 포함하지 않는다.
+
+##### 완료 데이터 플로우
+
+```text
+redirectTo + auth cookie
+  -> redirect(redirectTo || "/")
+  -> logged-in destination
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 최종 이동 | `redirectTo`, 세션 저장 결과 | 성공 시 `redirect(redirectTo || "/")` | 로그인 완료 화면 이동 |
+
+###### 구현 규칙
+
+- URL query 이름은 `redirect`로 통일한다.
+- 검증이 끝난 내부 이동 경로 이름은 `redirectTo`로 통일한다.
+- `redirectTo`는 `/`로 시작하는 내부 경로만 허용한다.
+- 잘못된 `redirect` 값은 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
+- 로그인 성공 시 웹 내부 흐름에서는 JSON 응답보다 `redirect(redirectTo || "/")`를 우선한다.
+- 웹 내부 기본 로그인 진입점은 `loginAction`이다.
+- 외부 클라이언트 지원이 필요할 때만 `POST /api/v1/auth/login`을 추가한다.
+- 공개 API를 열더라도 validator, repository, session helper는 기존 구현을 재사용한다.
+- 조회용 `query` 계층은 필수가 아니며, 로그인은 action + repository 조합으로 충분하면 생략한다.
+
+###### API 아키텍처 흐름
+
+```text
+web
+  -> redirect(redirectTo || "/")
+
+public API (optional)
+  -> JSON response
+    - success
+    - redirectTo
+    - user
+```
+
+###### 예외 상황
+
+- `redirectTo`가 없으면 `/`로 이동한다.
+- 보호 라우트에서 온 사용자는 로그인 후 원래 내부 경로로 복귀해야 한다.
+
+
 #### 기능 담당 파일
 
 | 항목 | 파일 |
@@ -396,86 +479,6 @@ functions
 - 로그인 실패 메시지는 계정 존재 여부를 드러내지 않고 공통 문구로 처리한다.
 - 세션 쿠키 이름은 하나로 고정하고, `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 한다.
 - `secure` 옵션은 production에서 활성화한다.
-
-#### 구현 규칙
-
-##### 로그인 페이지 진입
-
-- `app/(auth)/login/page.tsx`는 로그인 화면의 진입점이다.
-- 페이지 진입 시 `searchParams.redirect`를 읽고, `validateRedirect`로 검증한 뒤 내부 값 `redirectTo`를 만든다.
-- 이미 로그인된 사용자는 로그인 폼을 보지 않고 `redirectTo` 또는 `/`로 즉시 이동한다.
-- auth 전용 레이아웃이 있으면 `app/(auth)/layout.tsx`에서 로그인 화면의 메타데이터와 독립 레이아웃만 처리한다.
-- 보호 라우트에서 넘어온 값만 읽고, 로그인 페이지가 직접 보호 라우트 판단을 다시 구현하지 않는다.
-
-###### 예외 상황
-
-- 이미 로그인 상태에서 `/login`에 진입하면 즉시 `redirectTo` 또는 `/`로 이동한다.
-- 잘못된 `redirect`는 `/`로 fallback 한다.
-
-##### 로그인 폼 구성
-
-- `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 담당한다.
-- `features/auth/components/auth-header.tsx`, `auth-form-card.tsx`, `auth-switch-link.tsx`는 로그인 화면 표현만 담당한다.
-- `components/ui/input.tsx`, `components/ui/button.tsx`는 공통 UI 프리미티브로 유지한다.
-- `components/layout/auth-shell.tsx`는 중앙 정렬과 폭 제어 같은 auth 화면 배치만 담당한다.
-- `redirectTo`는 폼 상태로 저장하지 않고 상위에서 파생한 값을 전달받아 사용한다.
-
-###### 예외 상황
-
-- 제출 중에는 중복 클릭을 차단한다.
-- 로그인 실패 시 입력값은 유지한다.
-
-##### 입력 검증과 정규화
-
-- 로그인은 이메일/비밀번호 기반으로 구현한다.
-- `validateLoginInput`은 이메일 형식과 비밀번호 빈 값을 검증한다.
-- `normalizeEmail`은 trim, lowercase 처리 후 조회 기준값으로 사용한다.
-- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는 공통 문구로 처리한다.
-- 제출 중에는 중복 제출을 막고, 실패 시 입력값은 유지한다.
-
-###### 예외 상황
-
-- 공백 입력은 제출 불가로 처리한다.
-
-##### 계정 조회와 인증 확인
-
-- `loginAction`이 로그인 mutation의 단일 진입점이다.
-- 사용자 조회는 `lib/social-repository/*`의 `findUserByEmail`만 사용한다.
-- 이메일 기준 조회 계약은 `findUserByEmail({ email: normalizedEmail })` 형태로 통일한다.
-- 비밀번호 검증은 `verifyPassword(password, passwordHash)`로 처리한다.
-- 1차 MVP는 seed 데이터로 시작할 수 있지만, 조회 방식은 repository 뒤에 숨긴다.
-
-###### 예외 상황
-
-- 사용자 없음과 비밀번호 불일치는 같은 공통 인증 실패 메시지로 처리한다.
-- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는다.
-
-##### 세션 생성과 로그인 유지
-
-- 인증 성공 시 `createAuthSession`으로 최소 식별 정보만 쿠키에 저장한다.
-- 세션 조회는 `getAuthSession()`으로만 처리한다.
-- 세션 쿠키 옵션은 `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 사용한다.
-- `secure` 옵션은 production에서 활성화한다.
-- 세션에는 `userId`, `email`, `username`, `displayName`만 포함하고 비밀번호 정보는 저장하지 않는다.
-
-###### 예외 상황
-
-- 만료되었거나 손상된 세션 쿠키는 무효 세션으로 보고 재로그인을 요구한다.
-
-##### 리다이렉트 처리
-
-- URL query 이름은 `redirect`로 통일한다.
-- 검증이 끝난 내부 이동 경로 이름은 `redirectTo`로 통일한다.
-- `redirectTo`는 `/`로 시작하는 내부 경로만 허용한다.
-- 잘못된 `redirect` 값은 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
-- 로그인 성공 시 웹 내부 흐름에서는 JSON 응답보다 `redirect(redirectTo || "/")`를 우선한다.
-
-##### 공개 API 적용 기준
-
-- 웹 내부 기본 로그인 진입점은 `loginAction`이다.
-- 외부 클라이언트 지원이 필요할 때만 `POST /api/v1/auth/login`을 추가한다.
-- 공개 API를 열더라도 validator, repository, session helper는 기존 구현을 재사용한다.
-- 조회용 `query` 계층은 필수가 아니며, 로그인은 action + repository 조합으로 충분하면 생략한다.
 
 #### 개발자 플로우
 
