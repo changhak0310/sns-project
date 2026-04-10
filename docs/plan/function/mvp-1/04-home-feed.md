@@ -1,4 +1,4 @@
-# 기능 02 - 홈 피드
+﻿# 기능 04 - 홈 피드
 
 ## 개요
 
@@ -157,11 +157,11 @@ FeedViewModel
 - 기능 전용 UI는 `features/feed`, `features/post-detail` 아래에 둔다.
 - 피드에서의 클라이언트 이동만 `@modal` 슬롯으로 인터셉트한다.
 - 오버레이와 단독 상세는 같은 상세 콘텐츠 컴포넌트를 재사용한다.
-- 홈 피드 문서는 "피드 목록과 오버레이 진입 경험"을 소유하고, 상세 본문/댓글/좋아요의 공통 구현은 `03-post-detail-engagement.md` 기준을 재사용한다.
+- 홈 피드 문서는 "피드 목록과 오버레이 진입 경험"을 소유하고, 상세 본문/댓글/좋아요의 공통 구현은 `05-post-detail-engagement.md` 기준을 재사용한다.
 - 좋아요 버튼과 댓글 입력만 최소 범위 Client Component로 분리한다.
 - `selectedShortcode`와 `isOverlayOpen`을 별도 client state로 중복 저장하지 않는다.
 - 모달 닫힘은 `@modal/default.tsx`와 `@modal/[...catchAll]/page.tsx`로 안전하게 처리한다.
-- 저장 버튼은 홈 피드 카드에 배치 여지를 둘 수 있지만, 실제 저장 mutation 연결은 `08-save-bookmark.md`에서 확장한다.
+- 저장 버튼은 홈 피드 카드에 배치 여지를 둘 수 있지만, 실제 저장 mutation 연결은 `10-save-bookmark.md`에서 확장한다.
 - 피드 위치 유지 요구사항은 기본적으로 브라우저 히스토리와 인터셉트 라우트 동작에 기대고, 별도 전역 스토어는 기본 도입하지 않는다.
 
 ### 개발자 플로우
@@ -195,3 +195,7 @@ FeedViewModel
 - [ ] `selectedShortcode`, `isOverlayOpen`을 별도 상태로 저장하지 않고 라우트에서 파생한다
 - [ ] 닫기 또는 뒤로가기 시 피드 위치가 유지된다
 - [ ] 빈 피드 상태가 존재한다
+
+
+
+

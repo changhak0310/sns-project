@@ -15,8 +15,44 @@
 | 항목 | 내용 |
 | --- | --- |
 | 구현 디렉터리 | `features/auth/components` |
+| 적용 화면 | `/login`, `/signup` |
 | 추가할 디자인 | 집중형 auth card, 짧은 브랜드 카피, 부드러운 설명 문구 |
 | 필요한 컴포넌트 | `AuthHeader`, `AuthCard`, `LoginForm`, `SignupForm`, `AuthSwitchLink`, `OAuthButton(optional)` |
+
+#### 인증 화면 상세 규칙
+
+| 구분 | 규칙 |
+| --- | --- |
+| 시각 방향 | 장식보다 대비와 여백 중심의 미니멀 auth 화면 |
+| 무드 | 기본은 `focus`, 다크 화면은 `focus-dark` |
+| 배경 | 거의 검정에 가까운 단색 또는 약한 농도 차이의 dark surface |
+| 카드 위치 | 화면 정중앙 단일 카드 |
+| 카드 폭 | 모바일 `calc(100% - 32px)`, 최대 `420px` |
+| 카드 padding | 모바일 `24px`, 데스크톱 `32px` |
+| 정보 순서 | `제목 -> 설명 -> email -> password -> CTA -> 전환 링크` |
+| 확장 규칙 | 데스크톱에서도 2열로 나누지 않고 단일 카드 유지 |
+
+#### 인증 화면 상태 규칙
+
+| 상태 | 표현 방식 |
+| --- | --- |
+| 기본 | dark card + subtle border + muted placeholder |
+| focus | 입력 보더 강조 + 라이트 focus ring |
+| error | 필드 하단 에러 메시지 + 에러 보더 |
+| pending | CTA 비활성 + 로딩 텍스트 또는 스피너 |
+| disabled | 명도 낮춤 + 클릭 차단 |
+
+#### 인증 화면 컴포넌트 적용 규칙
+
+| 요소 | 기본 컴포넌트 | 규칙 |
+| --- | --- | --- |
+| name / displayName | `components/ui/input.tsx` | `type="text"`, 한 줄 입력, signup에서만 사용 |
+| email | `components/ui/input.tsx` | `type=\"email\"`, 한 줄 입력 |
+| password | `components/ui/input.tsx` | `type=\"password\"`, 한 줄 입력 |
+| submit CTA | `components/ui/button.tsx` | primary variant, full width |
+| 보조 링크 | `features/auth/components/auth-switch-link.tsx` | CTA보다 낮은 우선순위의 텍스트 링크 |
+| 카드 래퍼 | `features/auth/components/auth-form-card.tsx` | 입력/버튼/링크를 단일 card surface로 묶음 |
+| auth shell | `components/layout/auth-shell.tsx` | 중앙 정렬과 화면 폭 제어만 담당 |
 
 ### 홈 피드
 

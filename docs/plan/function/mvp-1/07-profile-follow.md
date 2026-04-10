@@ -1,4 +1,4 @@
-# 기능 05 - 프로필과 팔로우
+﻿# 기능 07 - 프로필과 팔로우
 
 ## 개요
 
@@ -85,7 +85,7 @@ ProfileView
 추가 규칙:
 
 - `user`는 `displayName`, `username`, `avatarUrl`, `bio`를 포함한다.
-- 프로필 기본 화면은 `posts` 섹션을 렌더링하고, `Saved` 탭 확장은 `08-save-bookmark.md`에서 처리한다.
+- 프로필 기본 화면은 `posts` 섹션을 렌더링하고, `Saved` 탭 확장은 `10-save-bookmark.md`에서 처리한다.
 
 ### 담당 파일
 
@@ -121,7 +121,7 @@ ProfileView
 - 자기 자신은 팔로우할 수 없게 막는다.
 - 그리드의 게시물은 `/p/[shortcode]` permalink 링크로 연결한다.
 - 그리드 클릭 후 오버레이로 열릴지 단독 페이지로 열릴지는 `(main)` 레이아웃의 인터셉트 라우트 구현을 따른다.
-- `tab` query는 profile page가 읽을 수 있지만, `saved` 탭 실제 렌더링은 `08-save-bookmark.md` 기준으로 확장한다.
+- `tab` query는 profile page가 읽을 수 있지만, `saved` 탭 실제 렌더링은 `10-save-bookmark.md` 기준으로 확장한다.
 
 ### 개발자 플로우
 
@@ -149,3 +149,6 @@ ProfileView
 - [ ] 팔로우 클릭 시 상태가 갱신된다
 - [ ] 게시물 클릭 시 `/p/[shortcode]` permalink로 이동한다
 - [ ] 없는 사용자는 not-found 처리된다
+
+
+

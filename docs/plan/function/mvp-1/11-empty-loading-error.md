@@ -1,4 +1,4 @@
-# 기능 09 - empty, loading, error 상태
+﻿# 기능 11 - empty, loading, error 상태
 
 ## 개요
 
@@ -142,3 +142,5 @@ UIStatus
 - [ ] 이미지 로드 실패 fallback이 존재한다
 - [ ] 전역 not-found가 존재한다
 - [ ] `@modal/default.tsx`가 존재한다
+
+

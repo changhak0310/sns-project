@@ -1,4 +1,4 @@
-# 기능 03 - 게시물 상세와 반응
+﻿# 기능 05 - 게시물 상세와 반응
 
 ## 개요
 
@@ -100,7 +100,7 @@ PostDetail
 추가 규칙:
 
 - `savedByViewer` 필드는 상세 액션 영역 확장을 위해 함께 조회할 수 있다.
-- 실제 저장 toggle 연결은 `08-save-bookmark.md`에서 확장한다.
+- 실제 저장 toggle 연결은 `10-save-bookmark.md`에서 확장한다.
 
 ### 담당 파일
 
@@ -139,7 +139,7 @@ PostDetail
 - 오버레이와 단독 상세는 `post-detail-content.tsx`를 공유한다.
 - 댓글 입력은 빈 값과 공백만 입력을 막고, 최대 길이는 validator에서 고정한다.
 - 작성자 이름과 아바타는 프로필 링크(`/u/[username]`)로 연결한다.
-- 액션 영역은 like/comment 중심으로 먼저 연결하고, save toggle은 `08-save-bookmark.md`에서 같은 레이아웃에 확장 가능하게 둔다.
+- 액션 영역은 like/comment 중심으로 먼저 연결하고, save toggle은 `10-save-bookmark.md`에서 같은 레이아웃에 확장 가능하게 둔다.
 - 시간이 허용되면 `generateMetadata`로 게시물 메타데이터를 확장한다.
 
 ### 개발자 플로우
@@ -170,3 +170,6 @@ PostDetail
 - [ ] 댓글 작성 시 목록이 갱신된다
 - [ ] 작성자 프로필 링크로 이동할 수 있다
 - [ ] 없는 게시물은 not-found 처리된다
+
+
+
