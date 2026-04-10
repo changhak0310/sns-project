@@ -236,6 +236,44 @@ public API flow (optional)
 - 공개 API를 열더라도 validator, repository, session helper는 같은 것을 재사용한다.
 - `page.tsx`나 `features/*`가 시드 데이터나 Firebase를 직접 호출하지 않는다.
 
+#### 데이터 플로우
+
+```text
+route input
+  searchParams.redirect
+    -> validateRedirect
+    -> redirectTo
+
+form input
+  email + password
+    -> validateLoginInput
+    -> normalizeEmail(email)
+    -> findUserByEmail(normalizedEmail)
+    -> user record
+    -> verifyPassword(password, passwordHash)
+    -> createAuthSession(user)
+    -> auth cookie
+    -> redirect(redirectTo || "/")
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부 검증 | `redirectTo` |
+| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식/빈 값 검사 | `fieldErrors` 또는 다음 단계 입력 |
+| 이메일 정규화 | `email` | trim, lowercase 처리 | `normalizedEmail` |
+| 사용자 조회 | `normalizedEmail` | `findUserByEmail({ email: normalizedEmail })` | `user` 또는 `null` |
+| 비밀번호 검증 | `password`, `user.passwordHash` | `verifyPassword` 실행 | `isPasswordValid` |
+| 인증 성공 데이터 정리 | `user` | 세션 저장용 최소 정보만 추출 | `AuthSession` |
+| 세션 저장 | `AuthSession` | `createAuthSession`으로 쿠키 저장 | `auth cookie` |
+| 최종 이동 | `redirectTo`, 세션 저장 결과 | 성공 시 `redirect(redirectTo || "/")` | 로그인 완료 화면 이동 |
+
+실패 분기:
+
+- 입력 검증 실패: `fieldErrors`, `values` 반환
+- 사용자 없음 또는 비밀번호 불일치: `formError`, `values` 반환
+- 잘못된 `redirect`: `AUTH_DEFAULT_REDIRECT`인 `/` 사용
+- 세션 저장 실패: 로그인 실패로 처리하고 공통 에러 반환
+
 #### 주요 상수와 함수
 
 ```text
@@ -310,6 +348,11 @@ functions
 - auth 전용 레이아웃이 있으면 `app/(auth)/layout.tsx`에서 로그인 화면의 메타데이터와 독립 레이아웃만 처리한다.
 - 보호 라우트에서 넘어온 값만 읽고, 로그인 페이지가 직접 보호 라우트 판단을 다시 구현하지 않는다.
 
+###### 예외 상황
+
+- 이미 로그인 상태에서 `/login`에 진입하면 즉시 `redirectTo` 또는 `/`로 이동한다.
+- 잘못된 `redirect`는 `/`로 fallback 한다.
+
 ##### 로그인 폼 구성
 
 - `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 담당한다.
@@ -317,6 +360,11 @@ functions
 - `components/ui/input.tsx`, `components/ui/button.tsx`는 공통 UI 프리미티브로 유지한다.
 - `components/layout/auth-shell.tsx`는 중앙 정렬과 폭 제어 같은 auth 화면 배치만 담당한다.
 - `redirectTo`는 폼 상태로 저장하지 않고 상위에서 파생한 값을 전달받아 사용한다.
+
+###### 예외 상황
+
+- 제출 중에는 중복 클릭을 차단한다.
+- 로그인 실패 시 입력값은 유지한다.
 
 ##### 입력 검증과 정규화
 
@@ -326,6 +374,10 @@ functions
 - 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는 공통 문구로 처리한다.
 - 제출 중에는 중복 제출을 막고, 실패 시 입력값은 유지한다.
 
+###### 예외 상황
+
+- 공백 입력은 제출 불가로 처리한다.
+
 ##### 계정 조회와 인증 확인
 
 - `loginAction`이 로그인 mutation의 단일 진입점이다.
@@ -334,6 +386,11 @@ functions
 - 비밀번호 검증은 `verifyPassword(password, passwordHash)`로 처리한다.
 - 1차 MVP는 seed 데이터로 시작할 수 있지만, 조회 방식은 repository 뒤에 숨긴다.
 
+###### 예외 상황
+
+- 사용자 없음과 비밀번호 불일치는 같은 공통 인증 실패 메시지로 처리한다.
+- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는다.
+
 ##### 세션 생성과 로그인 유지
 
 - 인증 성공 시 `createAuthSession`으로 최소 식별 정보만 쿠키에 저장한다.
@@ -341,6 +398,10 @@ functions
 - 세션 쿠키 옵션은 `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 사용한다.
 - `secure` 옵션은 production에서 활성화한다.
 - 세션에는 `userId`, `email`, `username`, `displayName`만 포함하고 비밀번호 정보는 저장하지 않는다.
+
+###### 예외 상황
+
+- 만료되었거나 손상된 세션 쿠키는 무효 세션으로 보고 재로그인을 요구한다.
 
 ##### 리다이렉트 처리
 
@@ -359,24 +420,40 @@ functions
 
 #### 개발자 플로우
 
-1. `app/(auth)/login/page.tsx`에서 세션과 `searchParams.redirect`를 확인한다.
-2. `redirect`를 검증해서 내부 값 `redirectTo`를 만든다.
-3. 이미 로그인 상태면 즉시 `redirectTo` 또는 `/`로 보낸다.
-4. 비로그인 상태면 `app/(auth)/layout.tsx`와 `components/layout/auth-shell.tsx` 기준으로 중앙 정렬 auth 화면을 렌더링한다.
-5. `features/auth/components/login-form.tsx`가 입력 UI와 제출 상태를 소유한다.
-6. `loginAction`이 이메일 normalize, validator 실행, 비밀번호 검증, 세션 쿠키 저장을 처리한다.
-7. 로그인 성공 시 `redirectTo` 또는 `/`로 리다이렉트한다.
-8. `app/(main)/layout.tsx`는 보호 라우트 진입 시 세션이 없으면 `/login?redirect=...`로 보낸다.
+##### 라우트 입력 플로우
 
-#### 예외 처리
+1. `app/(auth)/login/page.tsx`가 `searchParams.redirect`를 읽는다.
+2. `validateRedirect`로 내부 이동 가능한 값만 남기고 `redirectTo`를 만든다.
+3. `getAuthSession()` 결과가 있으면 로그인 화면을 건너뛰고 `redirectTo` 또는 `/`로 이동한다.
+4. 세션이 없으면 auth 화면 렌더링에 필요한 값만 내려준다.
 
-- 공백 입력은 제출 불가
-- 제출 중에는 중복 클릭 차단
-- 로그인 실패 시 입력값 유지
-- 로그인 실패는 공통 인증 실패 메시지 반환
-- 잘못된 `redirect`는 `/`로 fallback
-- 이미 로그인 상태에서 `/login`에 진입하면 즉시 이동
-- 만료되었거나 손상된 세션 쿠키는 무효 세션으로 보고 재로그인을 요구한다
+##### 폼 입력 플로우
+
+1. `features/auth/components/login-form.tsx`가 `email`, `password` 입력 UI를 렌더링한다.
+2. 사용자가 입력한 값은 폼 상태로 유지된다.
+3. 제출 시 폼은 `loginAction`으로 `email`, `password`, `redirect`를 전달한다.
+4. 실패 시에는 반환된 `fieldErrors`, `formError`, `values`를 다시 폼에 반영한다.
+
+##### 인증 데이터 플로우
+
+1. `loginAction`이 `formData`에서 `email`, `password`, `redirect`를 추출한다.
+2. `validateLoginInput`이 이메일 형식과 비밀번호 빈 값을 검사한다.
+3. `normalizeEmail(email)`이 조회용 이메일을 만든다.
+4. `findUserByEmail({ email: normalizedEmail })`가 사용자 원본 데이터를 조회한다.
+5. `verifyPassword(password, passwordHash)`가 로그인 가능 여부를 판별한다.
+
+##### 세션 데이터 플로우
+
+1. 인증 성공 시 사용자 원본 데이터에서 세션용 최소 정보만 추린다.
+2. `createAuthSession(user)`가 쿠키 기반 로그인 유지 정보를 저장한다.
+3. 이후 페이지에서는 `getAuthSession()`으로 현재 로그인 상태를 읽는다.
+
+##### 완료와 복귀 플로우
+
+1. 로그인 성공 시 `redirectTo`가 있으면 해당 내부 경로로 이동한다.
+2. `redirectTo`가 없거나 잘못되면 `/`로 이동한다.
+3. `app/(main)/layout.tsx`는 보호 라우트 접근 시 세션이 없으면 `/login?redirect=...`로 보낸다.
+4. 사용자는 로그인 완료 후 원래 가려던 페이지 또는 홈으로 복귀한다.
 
 ## 체크리스트
 
