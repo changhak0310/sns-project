@@ -1,533 +1,416 @@
-# 기능 02 - 로그인
+# 로그인 상태 관리 명세
 
-## 개요
+## 1. 로그인 상태 변수 및 함수 정의
 
-| 항목 | 내용 |
-| --- | --- |
-| 라우트 | `/login` |
-| 페이지 | `app/(auth)/login/page.tsx` |
-| 주요 액션 | `loginAction` |
-| 핵심 데이터 | 세션 정보, 사용자 인증 상태, 안전한 redirect 정보, auth form 상태 |
-| 성공 후 | 로그인 성공 시 `/` 또는 검증된 `redirectTo`로 이동 |
+로그인 훅과 컴포넌트는 아래 변수와 함수를 공통 계약으로 사용한다.
 
-## 유저 입장
+### 상태 변수 정의
 
-### 유저 스토리
+| 변수명 | 타입 | 설명 | 초기값 |
+| --- | --- | --- | --- |
+| `email` | `string` | 사용자가 입력한 이메일 | `""` |
+| `password` | `string` | 사용자가 입력한 비밀번호 | `""` |
+| `isLoading` | `boolean` | 로그인 요청 진행 여부 | `false` |
+| `isSuccess` | `boolean` | 로그인 성공 여부 | `false` |
+| `errorMessage` | `string` | 로그인 실패 시 사용자에게 보여줄 메시지 | `""` |
+| `user` | `User \| null` | 로그인 성공 후 저장할 사용자 정보 | `null` |
+| `isLoggedIn` | `boolean` | 현재 로그인 상태 여부 | `false` |
 
-> 나는 기존 계정으로 로그인해서 바로 서비스를 이용하고 싶다.
+### 함수 정의
 
-### 사용자가 보게 되는 것
-
-- 중앙 정렬 auth 화면
-- 단일 로그인 카드 또는 폼 블록
-- 로그인 폼
-- 이메일, 비밀번호 입력 필드
-- 입력 에러 메시지
-- 제출 버튼
-- 회원가입 화면 전환 링크
-
-### 사용자 흐름
-
-1. 비회원 사용자가 `/login`에 진입
-2. 이메일, 비밀번호를 입력한다
-3. 제출 시 계정 검증과 세션 생성을 수행한다
-4. 성공 시 `/` 또는 원래 가려던 내부 경로로 이동한다
-5. 실패 시 입력값은 유지되고 에러가 노출된다
-6. 이미 로그인된 사용자가 `/login`에 진입하면 로그인 화면을 보지 않고 `/` 또는 `redirectTo`로 즉시 이동한다
-
-### 유저 기준 핵심 규칙
-
-- 로그인은 실제 입력값 검증이 있어야 한다.
-- 실패해도 입력값이 사라지지 않아야 한다.
-- 보호 페이지에 바로 들어가도 로그인 후 원래 경로로 돌아가야 한다.
-- 이미 로그인된 사용자는 `/login`에 머물지 않아야 한다.
-- 로그인 화면은 메인 셸 없이 독립된 auth 레이아웃으로 보여야 한다.
-
-## 개발자 입장
-
-### 구조
-
-#### 라우트 구조
-
-```text
-app/
-  layout.tsx
-  (auth)/
-    layout.tsx (optional)
-    login/
-      page.tsx
-  (main)/
-    layout.tsx
-```
-
-### 화면 명세 (디자인 명세)
-
-디자인 참고 문서:
-
-- `docs/plan/layout/design-system.md`
-- `docs/plan/layout/design-system/screen-patterns.md`
-
-#### 화면 구조
-
-```text
-components/
-  layout/
-    auth-shell.tsx
-  ui/
-    button.tsx
-    input.tsx
-
-features/
-  auth/
-    components/
-      auth-header.tsx
-      auth-form-card.tsx
-      login-form.tsx
-      auth-switch-link.tsx
-```
-
-#### 화면 역할
-
-| 영역 | 역할 | 설명 |
+| 함수명 | 시그니처 | 역할 |
 | --- | --- | --- |
-| `auth-shell.tsx` | auth 레이아웃 | 로그인/회원가입 화면을 중앙 정렬 단일 레이아웃으로 감싼다 |
-| `auth-header.tsx` | 화면 헤더 | 로그인 제목, 설명 카피를 보여준다 |
-| `auth-form-card.tsx` | 폼 카드 컨테이너 | 입력 필드, 버튼, 링크를 한 카드 안에 정리한다 |
-| `login-form.tsx` | 로그인 폼 UI | 이메일/비밀번호 입력과 제출 상태를 렌더링한다 |
-| `auth-switch-link.tsx` | 전환 링크 | 회원가입 화면으로 이동하는 링크를 보여준다 |
-| `button.tsx`, `input.tsx` | 공통 UI | form의 공통 버튼과 입력창 스타일을 담당한다 |
+| `setEmail` | `(value: string) => void` | 이메일 입력값을 변경한다. |
+| `setPassword` | `(value: string) => void` | 비밀번호 입력값을 변경한다. |
+| `login` | `() => Promise<void>` | 로그인 요청을 실행한다. |
+| `resetLoginState` | `() => void` | 로그인 상태를 초기값으로 되돌린다. |
 
-#### 입력/버튼 UI 명세
+## 2. 데이터 흐름
 
-| 요소 | 사용할 컴포넌트 | UI 규칙 |
-| --- | --- | --- |
-| `email` 필드 | `components/ui/input.tsx` | `type=\"email\"`, 한 줄 입력, placeholder 제공 |
-| `password` 필드 | `components/ui/input.tsx` | `type=\"password\"`, 한 줄 입력, mask 처리 |
-| 로그인 버튼 | `components/ui/button.tsx` | primary variant, 전체 폭 사용 |
-| 회원가입 전환 링크 | `features/auth/components/auth-switch-link.tsx` | 버튼보다 약한 시각 우선순위의 텍스트 링크 |
+### 컴포넌트
 
-#### 화면 상태
+로그인 화면 컴포넌트는 아래 구조로 고정한다.
 
-| 상태 | 설명 |
-| --- | --- |
-| `email` | 이메일 입력값 |
-| `password` | 비밀번호 입력값 |
-| `isSubmitting` | 제출 중 여부 |
-| `submitError` | 공통 실패 메시지 |
-
-상태가 아닌 값:
-
-- `redirectTo`는 `searchParams.redirect`를 검증해 파생한다.
-- `isAuthenticated`는 서버에서 `getAuthSession()` 결과로 판단한다.
-
-#### 화면 담당 파일
-
-| 항목 | 파일 |
-| --- | --- |
-| auth 레이아웃 | `app/(auth)/layout.tsx` |
-| 로그인 페이지 | `app/(auth)/login/page.tsx` |
-| auth 셸 | `components/layout/auth-shell.tsx` |
-| auth 카드 | `features/auth/components/auth-form-card.tsx` |
-| 인증 feature UI | `features/auth/components/login-form.tsx` |
-| auth 헤더 | `features/auth/components/auth-header.tsx` |
-| 화면 전환 링크 | `features/auth/components/auth-switch-link.tsx` |
-| 공통 입력 UI | `components/ui/*` |
-
-### 기능 명세
-
-#### 액션 구조
+#### 컴포넌트 구조
 
 ```text
-lib/actions/auth.ts
-  - loginAction
-
-lib/validators/auth.ts
-  - validateLoginInput
-  - validateRedirect
-
-lib/social-repository/index.ts
-  - findUserByEmail
-
-lib/session/index.ts
-  - createAuthSession
-  - getAuthSession
-
-app/api/v1/auth/login/route.ts
-  - POST (optional public HTTP API)
+LoginPage
+  -> LoginForm
+    -> EmailInputField
+    -> PasswordInputField
+    -> LoginSubmitButton
+    -> LoginErrorMessage
 ```
 
-#### 데이터 구조
+#### 컴포넌트 정의
 
-```text
-LoginInput
-  - email
-  - password
-
-AuthSession
-  - userId
-  - email
-  - username
-  - displayName
-```
-
-#### API 구조
-
-```text
-internal API entry
-  - type: Server Action
-  - caller: login-form.tsx
-  - target: lib/actions/auth.ts -> loginAction
-
-public API entry (optional)
-  - type: HTTP API
-  - method: POST
-  - path: /api/v1/auth/login
-  - file: app/api/v1/auth/login/route.ts
-
-request body
-  - email: string
-  - password: string
-  - redirect: string | undefined
-
-failure response
-  - success: false
-  - fieldErrors
-  - formError
-  - values
-
-success response (public API only)
-  - success: true
-  - redirectTo
-  - user
-```
-
-- 웹 MVP 내부 기본 진입점은 `loginAction`이다.
-- 외부 클라이언트나 공개 HTTP API가 필요할 때만 `POST /api/v1/auth/login`을 사용한다.
-- `api-design.md` 기준으로 `route.ts`는 기본 경로가 아니라 공개 API가 필요할 때만 추가한다.
-- 웹 내부 로그인 성공은 JSON 응답보다 `redirect`가 우선이다.
-
-#### 주요 상수와 함수
-
-```text
-constants
-  - AUTH_COOKIE_NAME
-  - AUTH_REDIRECT_QUERY_KEY = "redirect"
-  - AUTH_DEFAULT_REDIRECT = "/"
-
-functions
-  - normalizeEmail(email)
-  - validateRedirect(value)
-  - validateLoginInput(input)
-  - verifyPassword(password, passwordHash)
-  - createAuthSession(user)
-  - getAuthSession()
-```
-
-##### 상수 역할
-
-| 이름 | 분류 | 역할 | 실제 기능 | 주 사용 위치 |
+| 컴포넌트명 | 역할 | 사용하는 인터페이스 | 내부 state | 이벤트에서 호출하는 함수 |
 | --- | --- | --- | --- | --- |
-| `AUTH_COOKIE_NAME` | 세션 상수 | 인증 쿠키 이름 고정 | 로그인 성공 시 저장할 쿠키와 이후 읽어올 쿠키를 동일한 이름으로 맞춘다 | `createAuthSession`, `getAuthSession`, `logoutAction` |
-| `AUTH_REDIRECT_QUERY_KEY` | 라우팅 상수 | redirect query 이름 고정 | `/login?redirect=...`에서 어떤 query key를 읽을지 통일한다 | `app/(auth)/login/page.tsx`, 보호 라우트 가드 |
-| `AUTH_DEFAULT_REDIRECT` | 라우팅 상수 | 기본 이동 경로 고정 | `redirect`가 없거나 잘못된 값일 때 `/`로 보내는 fallback 기준이 된다 | `validateRedirect`, `loginAction` |
+| `LoginPage` | 로그인 화면 진입 페이지 | 없음 | 없음 | 없음 |
+| `LoginForm` | 로그인 폼 조합과 제출 처리 | `UseLoginReturn` | 없음, `useLogin()` 반환값 사용 | `onSubmit -> login()` |
+| `EmailInputField` | 이메일 입력 필드 | `LoginFieldProps` | 없음 | `onChange -> setEmail(value)` |
+| `PasswordInputField` | 비밀번호 입력 필드 | `LoginFieldProps` | 없음 | `onChange -> setPassword(value)` |
+| `LoginSubmitButton` | 로그인 제출 버튼 | `LoginSubmitButtonProps` | 없음 | `onClick -> login()` |
+| `LoginErrorMessage` | 로그인 실패 메시지 출력 | `LoginErrorMessageProps` | 없음 | 없음 |
 
-##### 함수 역할
+컴포넌트에서 사용할 인터페이스는 아래와 같이 정의한다.
 
-| 이름 | 분류 | 입력 | 출력 | 역할 | 실제 기능 | 주 사용 위치 |
-| --- | --- | --- | --- | --- | --- | --- |
-| `normalizeEmail(email)` | 정규화 함수 | `email: string` | `normalizedEmail: string` | 이메일 비교 기준 통일 | trim, lowercase 처리 후 같은 이메일을 같은 값으로 맞춘다 | `loginAction`, `findUserByEmail` 호출 전 |
-| `validateRedirect(value)` | 라우팅 검증 함수 | `value: string \| undefined` | `redirectTo: string` | 안전한 내부 이동 경로 보장 | `/`로 시작하는 내부 경로만 허용하고, 외부 URL이나 `//` 경로는 차단한 뒤 fallback을 반환한다 | `app/(auth)/login/page.tsx`, `loginAction` |
-| `validateLoginInput(input)` | 폼 검증 함수 | `{ email, password }` | `{ fieldErrors, isValid }` 또는 동등한 검증 결과 | 로그인 폼 입력 검증 | 이메일 형식, 비밀번호 빈 값, 에러 메시지 구조를 한곳에서 통일한다 | `loginAction` |
-| `verifyPassword(password, passwordHash)` | 인증 검증 함수 | `password: string`, `passwordHash: string` | `boolean` | 로그인 자격 검증 | 사용자가 입력한 비밀번호와 저장된 hash가 일치하는지 비교한다 | `loginAction` |
-| `createAuthSession(user)` | 세션 생성 함수 | `user: AuthSession 생성 가능한 사용자 객체` | 세션 저장 결과 또는 cookie write side effect | 로그인 상태 시작 | 사용자 최소 식별 정보를 인증 쿠키에 저장해 이후 요청에서도 로그인 상태를 유지하게 만든다 | `loginAction` 성공 직후 |
-| `getAuthSession()` | 세션 조회 함수 | 없음 | `AuthSession \| null` | 현재 로그인 상태 확인 | 쿠키를 읽어서 현재 사용자가 로그인 상태인지, 누구인지 판별한다 | `app/(auth)/login/page.tsx`, `app/(main)/layout.tsx` |
+```ts
+interface UseLoginReturn {
+  email: string;
+  password: string;
+  isLoading: boolean;
+  isSuccess: boolean;
+  errorMessage: string;
+  user: User | null;
+  isLoggedIn: boolean;
+  setEmail: (value: string) => void;
+  setPassword: (value: string) => void;
+  login: () => Promise<void>;
+  resetLoginState: () => void;
+}
 
-##### 사용 흐름 기준 정리
+interface LoginFieldProps {
+  value: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}
 
-1. `normalizeEmail`이 이메일을 비교 가능한 형태로 맞춘다.
-2. `validateLoginInput`이 폼 입력 자체가 유효한지 검사한다.
-3. `validateRedirect`가 이동 가능한 내부 경로인지 확인한다.
-4. `verifyPassword`가 계정 인증 성공 여부를 판별한다.
-5. `createAuthSession`이 로그인 상태를 저장한다.
-6. `getAuthSession`이 이후 페이지에서 로그인 상태를 읽는다.
+interface LoginSubmitButtonProps {
+  isLoading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}
 
-
-#### 데이터 플로우
-
-- 내부 웹 흐름은 `Client/Form -> Server Action -> SocialRepository -> Session -> Redirect` 구조를 따른다.
-- 공개 API를 열더라도 validator, repository, session helper는 같은 것을 재사용한다.
-- `page.tsx`나 `features/*`가 시드 데이터나 Firebase를 직접 호출하지 않는다.
-
-##### 라우트 입력 데이터 플로우
-
-```text
-searchParams.redirect
-  -> validateRedirect
-  -> redirectTo
+interface LoginErrorMessageProps {
+  message: string;
+}
 ```
 
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부를 검증한다 | `redirectTo` |
+### 훅
 
-###### 구현 규칙
+훅 이름은 `useLogin`이다.
 
-- `app/(auth)/login/page.tsx`는 로그인 화면의 진입점이다.
-- 페이지 진입 시 `searchParams.redirect`를 읽고, `validateRedirect`로 검증한 뒤 내부 값 `redirectTo`를 만든다.
-- 이미 로그인된 사용자는 로그인 폼을 보지 않고 `redirectTo` 또는 `/`로 즉시 이동한다.
-- auth 전용 레이아웃이 있으면 `app/(auth)/layout.tsx`에서 로그인 화면의 메타데이터와 독립 레이아웃만 처리한다.
-- 보호 라우트에서 넘어온 값만 읽고, 로그인 페이지가 직접 보호 라우트 판단을 다시 구현하지 않는다.
+역할은 아래와 같다.
 
-###### API 아키텍처 흐름
+- 로그인 UI 상태 관리
+- 로그인 요청 실행
+- 서비스 호출
+- 성공/실패에 따라 상태 업데이트
 
-```text
-web
-  app/(auth)/login/page.tsx
-    -> searchParams.redirect
-    -> lib/validators/auth.ts::validateRedirect
-    -> redirectTo
-    -> lib/session::getAuthSession()
-    -> render login page or redirect
+입력값은 훅 내부 상태로 관리하는 방식을 기본으로 한다.
 
-public API (optional)
-  route query handling 없음
+- `email`
+- `password`
+
+훅 내부 상태는 아래와 같다.
+
+- `email`
+- `password`
+- `isLoading`
+- `isSuccess`
+- `errorMessage`
+- `user`
+- `isLoggedIn`
+
+`login(email, password)` 또는 내부 상태 기반 `login()` 함수는 아래 순서로 동작한다.
+
+1. `isLoading = true`
+2. `errorMessage = ""`
+3. `isSuccess = false`
+4. 로그인 서비스의 `login(email, password)` 호출
+5. 서비스 결과에 따라 상태 업데이트
+
+서비스 응답은 아래 형태를 기준으로 한다.
+
+```ts
+type LoginResult =
+  | {
+      success: true;
+      data: User;
+    }
+  | {
+      success: false;
+      message: string;
+    };
 ```
 
-###### 예외 상황
+성공 시 상태 갱신:
 
-- 잘못된 `redirect`는 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
-- 외부 URL, protocol 포함 값, `//` 경로는 허용하지 않는다.
+- `isSuccess = true`
+- `isLoggedIn = true`
+- `user = data`
+- `errorMessage = ""`
 
-##### 폼 입력 데이터 플로우
+실패 시 상태 갱신:
 
-```text
-email + password
-  -> validateLoginInput
-  -> fieldErrors or next step input
+- `isSuccess = false`
+- `isLoggedIn = false`
+- `user = null`
+- `errorMessage = message`
+
+종료 시 상태 갱신:
+
+- `isLoading = false`
+
+### 서비스
+
+서비스 이름은 `loginService`다.
+
+역할은 아래와 같다.
+
+- 입력값 검증
+- 로그인 비즈니스 로직 수행
+- 레포지토리 호출
+- 최종 결과를 훅에 반환
+
+함수 시그니처는 아래와 같다.
+
+```ts
+login(email: string, password: string): Promise<LoginResult>
 ```
 
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식과 빈 값을 검사한다 | `fieldErrors` 또는 다음 단계 입력 |
+### 레포지토리
 
-###### 구현 규칙
+레포지토리 이름은 `authRepository`다.
 
-- `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 담당한다.
-- `features/auth/components/auth-header.tsx`, `auth-form-card.tsx`, `auth-switch-link.tsx`는 로그인 화면 표현만 담당한다.
-- `components/ui/input.tsx`, `components/ui/button.tsx`는 공통 UI 프리미티브로 유지한다.
-- `components/layout/auth-shell.tsx`는 중앙 정렬과 폭 제어 같은 auth 화면 배치만 담당한다.
-- `redirectTo`는 폼 상태로 저장하지 않고 상위에서 파생한 값을 전달받아 사용한다.
+역할은 아래와 같다.
 
-###### API 아키텍처 흐름
+- API 요청 전송
+- 서버 응답 수신
+- 응답 데이터를 서비스 계층에 전달
 
-```text
-web
-  features/auth/components/login-form.tsx
-    -> lib/actions/auth.ts::loginAction(formData)
+함수 시그니처는 아래와 같다.
 
-public API (optional)
-  POST /api/v1/auth/login
-    -> app/api/v1/auth/login/route.ts
+```ts
+login(email: string, password: string): Promise<LoginApiResponse>
 ```
 
-###### 예외 상황
+### 서버
 
-- 입력 검증 실패 시 `fieldErrors`, `values`를 반환한다.
-- 공백 입력은 제출 불가로 처리한다.
-- 실패 시 사용자가 입력한 값은 유지한다.
+서버는 요청으로 전달받은 이메일과 비밀번호를 검증하고 인증 결과를 반환한다.
 
-##### 인증 데이터 플로우
+## 3. 서비스 내부 처리 순서
 
-```text
-email
-  -> normalizeEmail(email)
-  -> normalizedEmail
-  -> findUserByEmail(normalizedEmail)
-  -> user record
-  -> verifyPassword(password, passwordHash)
-  -> isPasswordValid
+로그인 서비스의 `login()` 함수는 아래 순서로 동작한다.
+
+1. 이메일 형식 검증 함수 `validateEmail(email)` 호출
+2. 비밀번호 공백 검증 함수 `validatePassword(password)` 호출
+3. 두 검증이 모두 통과하면 `authRepository.login(email, password)` 호출
+
+검증 실패 시 반환 메시지는 아래 규칙을 따른다.
+
+- 이메일 형식 오류: `이메일 형식과 맞지 않음`
+- 비밀번호 누락: `비밀번호를 입력해주세요`
+
+## 4. 이메일 검증 함수 명세
+
+함수명은 `validateEmail`이다.
+
+```ts
+function validateEmail(email: string): boolean
 ```
 
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 이메일 정규화 | `email` | trim, lowercase 처리 | `normalizedEmail` |
-| 사용자 조회 | `normalizedEmail` | `findUserByEmail({ email: normalizedEmail })` | `user` 또는 `null` |
-| 비밀번호 검증 | `password`, `user.passwordHash` | `verifyPassword` 실행 | `isPasswordValid` |
+예시 정규식:
 
-###### 구현 규칙
-
-- 로그인은 이메일/비밀번호 기반으로 구현한다.
-- `validateLoginInput`은 이메일 형식과 비밀번호 빈 값을 검증한다.
-- `normalizeEmail`은 trim, lowercase 처리 후 조회 기준값으로 사용한다.
-- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는 공통 문구로 처리한다.
-- 제출 중에는 중복 제출을 막고, 실패 시 입력값은 유지한다.
-- `loginAction`이 로그인 mutation의 단일 진입점이다.
-- 사용자 조회는 `lib/social-repository/*`의 `findUserByEmail`만 사용한다.
-- 이메일 기준 조회 계약은 `findUserByEmail({ email: normalizedEmail })` 형태로 통일한다.
-- 비밀번호 검증은 `verifyPassword(password, passwordHash)`로 처리한다.
-- 1차 MVP는 seed 데이터로 시작할 수 있지만, 조회 방식은 repository 뒤에 숨긴다.
-
-###### API 아키텍처 흐름
-
-```text
-shared auth pipeline
-  -> lib/validators/auth.ts::validateLoginInput
-  -> normalizeEmail(email)
-  -> lib/social-repository::findUserByEmail
-  -> verifyPassword(password, passwordHash)
+```ts
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 ```
 
-###### 예외 상황
+규칙은 아래와 같다.
 
-- 사용자 없음 또는 비밀번호 불일치는 같은 공통 인증 실패로 처리한다.
-- 인증 실패 시 `formError`, `values`를 반환한다.
-- 실패 메시지는 계정 존재 여부를 드러내지 않는다.
+- 이메일은 `@`를 포함해야 한다.
+- 도메인 형식을 만족해야 한다.
+- 공백은 허용하지 않는다.
 
-##### 세션 데이터 플로우
+반환값:
 
-```text
-user
-  -> AuthSession
-  -> createAuthSession(user)
-  -> auth cookie
+- 유효한 이메일이면 `true`
+- 유효하지 않으면 `false`
+
+## 5. 비밀번호 검증 함수 명세
+
+함수명은 `validatePassword`다.
+
+```ts
+function validatePassword(password: string): boolean
 ```
 
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 인증 성공 데이터 정리 | `user` | 세션 저장용 최소 정보만 추출 | `AuthSession` |
-| 세션 저장 | `AuthSession` | `createAuthSession`으로 쿠키 저장 | `auth cookie` |
+현재 로그인 명세에서는 아래 규칙만 적용한다.
 
-###### 구현 규칙
+- 빈 문자열이 아니어야 한다.
 
-- 인증 성공 시 `createAuthSession`으로 최소 식별 정보만 쿠키에 저장한다.
-- 세션 조회는 `getAuthSession()`으로만 처리한다.
-- 세션 쿠키 옵션은 `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 사용한다.
-- `secure` 옵션은 production에서 활성화한다.
-- 세션에는 `userId`, `email`, `username`, `displayName`만 포함하고 비밀번호 정보는 저장하지 않는다.
+추후 아래 조건으로 확장할 수 있다.
 
-###### API 아키텍처 흐름
+- 최소 8자 이상
+- 영문/숫자 포함
+- 특수문자 포함
 
-```text
-shared session pipeline
-  -> AuthSession mapping
-  -> lib/session::createAuthSession
-  -> auth cookie write
+반환값:
+
+- 비밀번호가 존재하면 `true`
+- 비어 있으면 `false`
+
+## 6. Repository 명세
+
+레포지토리 이름은 `authRepository`다.
+
+반환 타입은 아래와 같다.
+
+```ts
+type LoginApiResponse =
+  | {
+      success: true;
+      data: User;
+    }
+  | {
+      success: false;
+      message: string;
+    };
 ```
 
-###### 예외 상황
+동작은 아래와 같다.
 
-- 세션 저장 실패 시 로그인 실패로 처리하고 공통 에러를 반환한다.
-- 세션에는 최소 식별 정보만 저장하고 비밀번호 정보는 포함하지 않는다.
+1. 이메일과 비밀번호를 API 요청 바디에 담는다.
+2. 로그인 API를 호출한다.
+3. 응답 결과를 반환한다.
 
-##### 완료 데이터 플로우
+## 7. API 스펙 정의
 
-```text
-redirectTo + auth cookie
-  -> redirect(redirectTo || "/")
-  -> logged-in destination
-```
+로그인 API 스펙은 아래와 같다.
 
-| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
-| --- | --- | --- | --- |
-| 최종 이동 | `redirectTo`, 세션 저장 결과 | 성공 시 `redirect(redirectTo || "/")` | 로그인 완료 화면 이동 |
-
-###### 구현 규칙
-
-- URL query 이름은 `redirect`로 통일한다.
-- 검증이 끝난 내부 이동 경로 이름은 `redirectTo`로 통일한다.
-- `redirectTo`는 `/`로 시작하는 내부 경로만 허용한다.
-- 잘못된 `redirect` 값은 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
-- 로그인 성공 시 웹 내부 흐름에서는 JSON 응답보다 `redirect(redirectTo || "/")`를 우선한다.
-- 웹 내부 기본 로그인 진입점은 `loginAction`이다.
-- 외부 클라이언트 지원이 필요할 때만 `POST /api/v1/auth/login`을 추가한다.
-- 공개 API를 열더라도 validator, repository, session helper는 기존 구현을 재사용한다.
-- 조회용 `query` 계층은 필수가 아니며, 로그인은 action + repository 조합으로 충분하면 생략한다.
-
-###### API 아키텍처 흐름
-
-```text
-web
-  -> redirect(redirectTo || "/")
-
-public API (optional)
-  -> JSON response
-    - success
-    - redirectTo
-    - user
-```
-
-###### 예외 상황
-
-- `redirectTo`가 없으면 `/`로 이동한다.
-- 보호 라우트에서 온 사용자는 로그인 후 원래 내부 경로로 복귀해야 한다.
-
-
-#### 기능 담당 파일
-
-| 항목 | 파일 |
+| 항목 | 값 |
 | --- | --- |
-| 액션 | `lib/actions/auth.ts` |
-| 공개 로그인 API | `app/api/v1/auth/login/route.ts` (optional) |
-| 세션 helper | `lib/session/*` |
-| validator | `lib/validators/auth.ts` |
-| repository | `lib/social-repository/*` |
-| 가드 | `app/(main)/layout.tsx` |
+| API 이름 | 로그인 API |
+| Method | `POST` |
+| URL | `/api/auth/login` |
 
-#### 입력 및 세션 규칙
+Request Body:
 
-- `email`은 trim 후 lowercase로 normalize하고 형식을 검증한다.
-- `password`는 빈 값 입력을 허용하지 않는다.
-- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않고 공통 문구로 처리한다.
-- 세션 쿠키 이름은 하나로 고정하고, `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 한다.
-- `secure` 옵션은 production에서 활성화한다.
+```json
+{
+  "email": "user@example.com",
+  "password": "1234"
+}
+```
 
-#### 개발자 플로우
+성공 응답 예시:
 
-##### 라우트 입력 플로우
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "홍길동",
+    "accessToken": "jwt-token"
+  }
+}
+```
 
-1. `app/(auth)/login/page.tsx`가 `searchParams.redirect`를 읽는다.
-2. `validateRedirect`로 내부 이동 가능한 값만 남기고 `redirectTo`를 만든다.
-3. `getAuthSession()` 결과가 있으면 로그인 화면을 건너뛰고 `redirectTo` 또는 `/`로 이동한다.
-4. 세션이 없으면 auth 화면 렌더링에 필요한 값만 내려준다.
+실패 응답 예시:
 
-##### 폼 입력 플로우
+```json
+{
+  "success": false,
+  "message": "이메일 또는 비밀번호가 올바르지 않습니다."
+}
+```
 
-1. `features/auth/components/login-form.tsx`가 `email`, `password` 입력 UI를 렌더링한다.
-2. 사용자가 입력한 값은 폼 상태로 유지된다.
-3. 제출 시 폼은 `loginAction`으로 `email`, `password`, `redirect`를 전달한다.
-4. 실패 시에는 반환된 `fieldErrors`, `formError`, `values`를 다시 폼에 반영한다.
+서버 에러 응답 예시:
 
-##### 인증 데이터 플로우
+```json
+{
+  "success": false,
+  "message": "서버 오류가 발생했습니다."
+}
+```
 
-1. `loginAction`이 `formData`에서 `email`, `password`, `redirect`를 추출한다.
-2. `validateLoginInput`이 이메일 형식과 비밀번호 빈 값을 검사한다.
-3. `normalizeEmail(email)`이 조회용 이메일을 만든다.
-4. `findUserByEmail({ email: normalizedEmail })`가 사용자 원본 데이터를 조회한다.
-5. `verifyPassword(password, passwordHash)`가 로그인 가능 여부를 판별한다.
+## 8. 서버 명세
 
-##### 세션 데이터 플로우
+서버의 역할은 아래와 같다.
 
-1. 인증 성공 시 사용자 원본 데이터에서 세션용 최소 정보만 추린다.
-2. `createAuthSession(user)`가 쿠키 기반 로그인 유지 정보를 저장한다.
-3. 이후 페이지에서는 `getAuthSession()`으로 현재 로그인 상태를 읽는다.
+- 요청 바디에서 이메일과 비밀번호 추출
+- 이메일로 사용자 조회
+- 사용자가 존재하지 않으면 실패 반환
+- 비밀번호 일치 여부 확인
+- 일치하면 로그인 성공 반환
+- 필요 시 `accessToken` 발급
+- 사용자 정보 반환
 
-##### 완료와 복귀 플로우
+## 9. 로그인 성공 시 처리
 
-1. 로그인 성공 시 `redirectTo`가 있으면 해당 내부 경로로 이동한다.
-2. `redirectTo`가 없거나 잘못되면 `/`로 이동한다.
-3. `app/(main)/layout.tsx`는 보호 라우트 접근 시 세션이 없으면 `/login?redirect=...`로 보낸다.
-4. 사용자는 로그인 완료 후 원래 가려던 페이지 또는 홈으로 복귀한다.
+로그인 성공 시 훅은 아래 상태를 갱신한다.
 
-## 체크리스트
+- `isSuccess = true`
+- `isLoggedIn = true`
+- `user = 서버에서 받은 사용자 정보`
+- `errorMessage = ""`
+- `isLoading = false`
 
-- [ ] `/login` 페이지가 렌더링된다
-- [ ] 로그인 화면이 메인 셸 없이 중앙 정렬 auth 레이아웃으로 보인다
-- [ ] 로그인 폼에 이메일, 비밀번호 입력이 있다
-- [ ] 잘못된 입력 시 에러 메시지가 보인다
-- [ ] `loginAction`이 세션 쿠키를 생성한다
-- [ ] 로그인 성공 시 `redirect` query가 있으면 검증 후 해당 경로로 이동한다
-- [ ] 잘못된 `redirect`는 `/`로 이동한다
-- [ ] 이미 로그인 상태에서 `/login` 접근 시 홈 또는 목적지로 이동한다
-- [ ] `redirectTo`는 로컬 상태가 아니라 라우트 입력에서 파생된다
-- [ ] 실패 시 입력값이 유지된다
-- [ ] 세션이 없으면 보호 라우트 접근이 차단된다
+필요 시 아래 추가 작업을 수행할 수 있다.
+
+- `accessToken` 저장
+- `refreshToken` 저장
+- 홈 화면으로 이동
+- 전역 auth store 업데이트
+
+## 10. 로그인 실패 시 처리
+
+로그인 실패 시 훅은 아래 상태를 갱신한다.
+
+- `isSuccess = false`
+- `isLoggedIn = false`
+- `user = null`
+- `errorMessage = 실패 메시지`
+- `isLoading = false`
+
+## 11. 예외 처리 규칙
+
+| 상황 | 메시지 |
+| --- | --- |
+| 이메일 검증 실패 | `이메일 형식과 맞지 않음` |
+| 비밀번호 누락 | `비밀번호를 입력해주세요` |
+| 서버 인증 실패 | `이메일 또는 비밀번호가 올바르지 않습니다.` |
+| 서버 오류 | `서버 오류가 발생했습니다.` |
+| 네트워크 오류 | `네트워크 오류가 발생했습니다. 다시 시도해주세요.` |
+
+## 12. 타입 정의 예시
+
+```ts
+type User = {
+  id: number;
+  email: string;
+  name: string;
+  accessToken?: string;
+};
+
+type LoginResult =
+  | {
+      success: true;
+      data: User;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+```
+
+## 13. 권장 변수명 정리
+
+로그인 상태 관리는 아래 변수명으로 통일하는 것을 권장한다.
+
+- `email`
+- `password`
+- `isLoading`
+- `isSuccess`
+- `isLoggedIn`
+- `errorMessage`
+- `user`
+- `login`
+- `setEmail`
+- `setPassword`
+- `resetLoginState`
+
+메시지 변수는 `msg`보다 `errorMessage`를 사용한다.
+성공 여부도 `success` 또는 `isSuccess`로 일관되게 유지한다.
