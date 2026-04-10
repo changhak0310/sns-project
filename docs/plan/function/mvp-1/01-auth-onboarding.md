@@ -113,6 +113,78 @@ AuthSession
 - `username`은 회원가입 시 자동 생성하며, 중복되지 않도록 보정한다.
 - 세션에는 `passwordHash`를 절대 포함하지 않는다.
 
+#### API 구조
+
+```text
+Server Action API
+
+signupAction(formData)
+  input:
+    - name
+    - email
+    - password
+    - redirect (optional)
+  output:
+    - success
+    - fieldErrors
+    - formError
+    - redirectTo
+
+loginAction(formData)
+  input:
+    - email
+    - password
+    - redirect (optional)
+  output:
+    - success
+    - fieldErrors
+    - formError
+    - redirectTo
+
+logoutAction()
+  input:
+    - none
+  output:
+    - session cleared
+    - redirect to /login
+```
+
+- 1차 인증은 별도 REST endpoint보다 `Server Action`을 우선 사용한다.
+- 브라우저 폼 제출은 `signupAction`, `loginAction`으로 직접 연결한다.
+- 필드 단위 오류는 `fieldErrors`, 공통 실패는 `formError`로 구분한다.
+- 성공 시 응답 객체를 오래 들고 있지 않고, 세션 저장 후 즉시 redirect 처리한다.
+
+#### 주요 상수와 함수
+
+```text
+constants
+  - AUTH_COOKIE_NAME
+  - AUTH_REDIRECT_QUERY_KEY = "redirect"
+  - AUTH_DEFAULT_REDIRECT = "/"
+  - PASSWORD_MIN_LENGTH = 8
+  - USERNAME_SUFFIX_START = 1
+
+functions
+  - normalizeEmail(email)
+  - validateRedirect(value)
+  - hashPassword(password)
+  - verifyPassword(password, passwordHash)
+  - generateBaseUsername(name, email)
+  - ensureUniqueUsername(baseUsername)
+  - createAuthSession(user)
+  - clearAuthSession()
+  - getAuthSession()
+```
+
+- `AUTH_COOKIE_NAME`은 인증 쿠키 이름을 하나로 고정하는 기준값이다.
+- `AUTH_REDIRECT_QUERY_KEY`는 URL query 키를 문서와 구현에서 동일하게 유지하기 위한 상수다.
+- `AUTH_DEFAULT_REDIRECT`는 잘못된 redirect 입력이나 빈 값일 때의 fallback 경로다.
+- `normalizeEmail`은 trim, lowercase 처리 후 비교와 저장에 사용한다.
+- `validateRedirect`는 내부 경로만 허용하고 외부 URL, protocol 포함 값, `//` 경로를 차단한다.
+- `hashPassword`, `verifyPassword`는 비밀번호 저장과 로그인 검증 책임을 분리한다.
+- `generateBaseUsername`, `ensureUniqueUsername`는 username 생성 책임을 분리한다.
+- `createAuthSession`, `clearAuthSession`, `getAuthSession`은 쿠키 기반 로그인 유지 정보를 다룬다.
+
 ### 담당 파일
 
 | 항목 | 파일 |
