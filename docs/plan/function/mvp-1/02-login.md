@@ -302,57 +302,60 @@ functions
 
 #### 구현 규칙
 
-##### Route Orchestration Layer (`app/*`)
+##### 로그인 페이지 진입
 
-- `app/(auth)/login/page.tsx`는 로그인 화면의 진입점으로만 동작한다.
-- 이 레이어의 책임은 `searchParams.redirect` 읽기, 현재 세션 확인, 인증 여부에 따른 분기, 화면 조합이다.
-- 이미 로그인된 사용자는 이 레이어에서 바로 `redirectTo` 또는 `/`로 보낸다.
-- `app/(auth)/login/page.tsx`는 repository, seed data, Firebase, password 검증 로직을 직접 호출하지 않는다.
-- `app/(auth)/layout.tsx`가 있다면 auth 전용 레이아웃과 메타데이터만 담당한다.
-- 보호 라우트 차단은 `app/(main)/layout.tsx`에서 처리하고, 로그인 페이지는 그 결과로 전달된 `redirect` query만 읽는다.
+- `app/(auth)/login/page.tsx`는 로그인 화면의 진입점이다.
+- 페이지 진입 시 `searchParams.redirect`를 읽고, `validateRedirect`로 검증한 뒤 내부 값 `redirectTo`를 만든다.
+- 이미 로그인된 사용자는 로그인 폼을 보지 않고 `redirectTo` 또는 `/`로 즉시 이동한다.
+- auth 전용 레이아웃이 있으면 `app/(auth)/layout.tsx`에서 로그인 화면의 메타데이터와 독립 레이아웃만 처리한다.
+- 보호 라우트에서 넘어온 값만 읽고, 로그인 페이지가 직접 보호 라우트 판단을 다시 구현하지 않는다.
 
-##### Presentation Layer (`features/*`, `components/*`)
+##### 로그인 폼 구성
 
-- `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 소유한다.
-- 이 레이어의 책임은 입력 필드 렌더링, pending 상태 표시, field/form error 표시, submit 트리거다.
-- `login-form.tsx`는 `findUserByEmail`, `createAuthSession`, `cookies()`를 직접 호출하지 않는다.
-- `features/auth/components/auth-header.tsx`, `auth-form-card.tsx`, `auth-switch-link.tsx`는 auth 문맥 전용 표현 컴포넌트다.
-- `components/ui/button.tsx`, `components/ui/input.tsx`는 기능 정책 없는 공통 UI 프리미티브로 유지한다.
-- `components/layout/auth-shell.tsx`는 중앙 정렬, 폭, 여백, 배경 같은 레이아웃 표현만 담당한다.
-- `redirectTo`는 이 레이어의 상태로 저장하지 않고, 상위 라우트에서 파생된 값을 props로만 전달받는다.
+- `features/auth/components/login-form.tsx`는 이메일/비밀번호 입력 UI와 제출 상호작용을 담당한다.
+- `features/auth/components/auth-header.tsx`, `auth-form-card.tsx`, `auth-switch-link.tsx`는 로그인 화면 표현만 담당한다.
+- `components/ui/input.tsx`, `components/ui/button.tsx`는 공통 UI 프리미티브로 유지한다.
+- `components/layout/auth-shell.tsx`는 중앙 정렬과 폭 제어 같은 auth 화면 배치만 담당한다.
+- `redirectTo`는 폼 상태로 저장하지 않고 상위에서 파생한 값을 전달받아 사용한다.
 
-##### Application / Business Layer (`lib/actions/*`, `lib/validators/*`, `lib/session/*`)
-
-- `lib/actions/auth.ts::loginAction`이 로그인 mutation의 단일 진입점이다.
-- `loginAction`은 입력 normalize, 입력 검증, 사용자 조회 요청, password 검증, 세션 저장, redirect까지 한 흐름으로 묶는다.
-- `lib/validators/auth.ts::validateLoginInput`은 이메일 형식과 비밀번호 입력 규칙을 검증한다.
-- `lib/validators/auth.ts::validateRedirect`는 내부 경로만 허용하고 외부 URL을 차단한다.
-- `normalizeEmail`은 액션 내부에서 조회 전에 실행한다.
-- `lib/session/*`은 세션 생성과 세션 조회를 담당하며, 쿠키 옵션은 여기서 일관되게 관리한다.
-- 이 레이어는 JSX를 렌더링하지 않고, UI 스타일이나 레이아웃 배치를 소유하지 않는다.
-
-##### Data Access Layer (`lib/social-repository/*`)
-
-- 로그인에서 사용자 조회는 `lib/social-repository/*`의 `findUserByEmail`만 사용한다.
-- repository는 시드 데이터인지 실제 백엔드인지 감추는 단일 진입점 역할을 한다.
-- repository는 route, searchParams, React state를 알지 못해야 한다.
-- 이메일 기준 사용자 조회 계약은 `findUserByEmail({ email: normalizedEmail })` 형태로 통일한다.
-
-##### Data Source Layer (`data/seed/*`, backend)
-
-- 1차 MVP에서는 seed 기반 사용자 데이터로 시작할 수 있다.
-- 이후 실제 백엔드로 교체되더라도 `loginAction`과 `login-form.tsx`는 바뀌지 않고 repository 뒤에서만 변경되게 유지한다.
-- password hash 저장 위치와 사용자 원본 데이터는 data source가 책임지고, UI 레이어는 그 구조를 직접 알지 않는다.
-
-##### 레이어 공통 규칙
+##### 입력 검증과 정규화
 
 - 로그인은 이메일/비밀번호 기반으로 구현한다.
-- 조회용 `query` 계층은 필수가 아니며, 로그인은 repository + action 조합으로 충분하면 생략한다.
+- `validateLoginInput`은 이메일 형식과 비밀번호 빈 값을 검증한다.
+- `normalizeEmail`은 trim, lowercase 처리 후 조회 기준값으로 사용한다.
+- 로그인 실패 메시지는 계정 존재 여부를 드러내지 않는 공통 문구로 처리한다.
+- 제출 중에는 중복 제출을 막고, 실패 시 입력값은 유지한다.
+
+##### 계정 조회와 인증 확인
+
+- `loginAction`이 로그인 mutation의 단일 진입점이다.
+- 사용자 조회는 `lib/social-repository/*`의 `findUserByEmail`만 사용한다.
+- 이메일 기준 조회 계약은 `findUserByEmail({ email: normalizedEmail })` 형태로 통일한다.
+- 비밀번호 검증은 `verifyPassword(password, passwordHash)`로 처리한다.
+- 1차 MVP는 seed 데이터로 시작할 수 있지만, 조회 방식은 repository 뒤에 숨긴다.
+
+##### 세션 생성과 로그인 유지
+
+- 인증 성공 시 `createAuthSession`으로 최소 식별 정보만 쿠키에 저장한다.
+- 세션 조회는 `getAuthSession()`으로만 처리한다.
+- 세션 쿠키 옵션은 `httpOnly`, `sameSite=lax`, `path=/`를 기본으로 사용한다.
+- `secure` 옵션은 production에서 활성화한다.
+- 세션에는 `userId`, `email`, `username`, `displayName`만 포함하고 비밀번호 정보는 저장하지 않는다.
+
+##### 리다이렉트 처리
+
 - URL query 이름은 `redirect`로 통일한다.
-- 내부 검증이 끝난 이동 경로 이름은 `redirectTo`로 통일한다.
+- 검증이 끝난 내부 이동 경로 이름은 `redirectTo`로 통일한다.
 - `redirectTo`는 `/`로 시작하는 내부 경로만 허용한다.
-- `redirectTo`를 클라이언트 전역 상태나 로컬 상태에 중복 저장하지 않는다.
-- 성공 시 세션 쿠키를 저장한다.
+- 잘못된 `redirect` 값은 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
+- 로그인 성공 시 웹 내부 흐름에서는 JSON 응답보다 `redirect(redirectTo || "/")`를 우선한다.
+
+##### 공개 API 적용 기준
+
+- 웹 내부 기본 로그인 진입점은 `loginAction`이다.
+- 외부 클라이언트 지원이 필요할 때만 `POST /api/v1/auth/login`을 추가한다.
+- 공개 API를 열더라도 validator, repository, session helper는 기존 구현을 재사용한다.
+- 조회용 `query` 계층은 필수가 아니며, 로그인은 action + repository 조합으로 충분하면 생략한다.
 
 #### 개발자 플로우
 
