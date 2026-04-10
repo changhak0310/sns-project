@@ -4,34 +4,60 @@
 
 로그인 훅과 컴포넌트는 아래 변수와 함수를 공통 계약으로 사용한다.
 
-### 상태 변수 정의
+### A. 타입 정의
 
-| 변수명 | 타입 | 설명 | 초기값 |
+#### I. 공통 타입
+
+<a id="type-user"></a>
+
+##### a. `User`
+
+```ts
+type User = {
+  id: number;
+  email: string;
+  name: string;
+  username: string;
+  avatarUrl: string;
+  accessToken: string;
+};
+```
+
+
+### B. 상태 변수 정의
+
+| 변수명 | 타입 | 설명 | 초기값 | 사용 컴포넌트 |
+| --- | --- | --- | --- | --- |
+| `email` | `string` | 사용자가 입력한 이메일 | `""` | `LoginForm`, `EmailInputField` |
+| `password` | `string` | 사용자가 입력한 비밀번호 | `""` | `LoginForm`, `PasswordInputField` |
+| `emailError` | `string` | 이메일 입력 필드의 실시간 검증 메시지 | `""` | `LoginForm`, `EmailInputField` |
+| `passwordError` | `string` | 비밀번호 입력 여부의 실시간 검증 메시지 | `""` | `LoginForm`, `PasswordInputField` |
+| `formError` | `string` | 로그인 요청 실패 시 폼 영역에 보여줄 메시지 | `""` | `LoginForm`, `LoginErrorMessage` |
+| `isFormValid` | `boolean` | 이메일 형식이 유효하고 비밀번호가 비어 있지 않은지 여부 | `false` | `LoginForm`, `LoginSubmitButton` |
+| `isLoading` | `boolean` | 로그인 요청 진행 여부 | `false` | `LoginForm`, `LoginSubmitButton` |
+| `loginUser` | <a href="#type-user"><code>User</code></a> \| null | 로그인 성공 시 저장할 사용자 정보, 값이 있으면 성공 상태로 판단한다 | `null` | `LoginForm` |
+
+### C. 함수 정의
+
+| 함수명 | 시그니처 | 역할 | 사용 컴포넌트 |
 | --- | --- | --- | --- |
-| `email` | `string` | 사용자가 입력한 이메일 | `""` |
-| `password` | `string` | 사용자가 입력한 비밀번호 | `""` |
-| `isLoading` | `boolean` | 로그인 요청 진행 여부 | `false` |
-| `isSuccess` | `boolean` | 로그인 성공 여부 | `false` |
-| `errorMessage` | `string` | 로그인 실패 시 사용자에게 보여줄 메시지 | `""` |
-| `user` | `User \| null` | 로그인 성공 후 저장할 사용자 정보 | `null` |
-| `isLoggedIn` | `boolean` | 현재 로그인 상태 여부 | `false` |
-
-### 함수 정의
-
-| 함수명 | 시그니처 | 역할 |
-| --- | --- | --- |
-| `setEmail` | `(value: string) => void` | 이메일 입력값을 변경한다. |
-| `setPassword` | `(value: string) => void` | 비밀번호 입력값을 변경한다. |
-| `login` | `() => Promise<void>` | 로그인 요청을 실행한다. |
-| `resetLoginState` | `() => void` | 로그인 상태를 초기값으로 되돌린다. |
+| `setEmail()` | `(value: string) => void` | 이메일 입력값을 변경하고 실시간 검증과 이전 로그인 결과 상태 초기화를 실행한다. | `LoginForm`, `EmailInputField` |
+| `setPassword()` | `(value: string) => void` | 비밀번호 입력값을 변경하고 실시간 검증과 이전 로그인 결과 상태 초기화를 실행한다. | `LoginForm`, `PasswordInputField` |
+| `login()` | `() => Promise<void>` | 폼이 유효할 때 로그인 요청을 실행한다. | `LoginForm`, `LoginSubmitButton` |
+| `resetLoginState()` | `() => void` | 로그인 상태와 검증 메시지를 초기값으로 되돌린다. | `LoginForm` |
 
 ## 2. 데이터 흐름
 
-### 컴포넌트
+```text
+A. 컴포넌트 -> B. 훅 -> C. 서비스 -> D. 레포지토리 -> E. 서버
+```
+참조 - [layer.md](../layout/layer.md)
+
+### A. 컴포넌트
 
 로그인 화면 컴포넌트는 아래 구조로 고정한다.
-
-#### 컴포넌트 구조
+  
+#### I. 컴포넌트 구조
 
 ```text
 LoginPage
@@ -42,86 +68,169 @@ LoginPage
     -> LoginErrorMessage
 ```
 
-#### 컴포넌트 정의
+#### II. 컴포넌트 타입
 
-| 컴포넌트명 | 역할 | 사용하는 인터페이스 | 내부 state | 이벤트에서 호출하는 함수 |
-| --- | --- | --- | --- | --- |
-| `LoginPage` | 로그인 화면 진입 페이지 | 없음 | 없음 | 없음 |
-| `LoginForm` | 로그인 폼 조합과 제출 처리 | `UseLoginReturn` | 없음, `useLogin()` 반환값 사용 | `onSubmit -> login()` |
-| `EmailInputField` | 이메일 입력 필드 | `LoginFieldProps` | 없음 | `onChange -> setEmail(value)` |
-| `PasswordInputField` | 비밀번호 입력 필드 | `LoginFieldProps` | 없음 | `onChange -> setPassword(value)` |
-| `LoginSubmitButton` | 로그인 제출 버튼 | `LoginSubmitButtonProps` | 없음 | `onClick -> login()` |
-| `LoginErrorMessage` | 로그인 실패 메시지 출력 | `LoginErrorMessageProps` | 없음 | 없음 |
+<a id="type-login-field-props"></a>
 
-컴포넌트에서 사용할 인터페이스는 아래와 같이 정의한다.
+##### a. `LoginFieldProps`
 
 ```ts
-interface UseLoginReturn {
+type LoginFieldProps = {
+  value: string;
+  fieldErrorMessage?: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+};
+```
+
+<a id="type-login-submit-button-props"></a>
+
+##### b. `LoginSubmitButtonProps`
+
+```ts
+type LoginSubmitButtonProps = {
+  isLoading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+};
+```
+
+<a id="type-login-error-message-props"></a>
+
+##### c. `LoginErrorMessageProps`
+
+```ts
+type LoginErrorMessageProps = {
+  message: string;
+};
+```
+
+#### III. 컴포넌트 정의
+
+| 컴포넌트명 | 역할 | 사용하는 Hook | 받는 props | 이벤트에서 호출하는 함수 | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `LoginPage` | 로그인 화면 진입 페이지 | 없음 | 없음 | 없음 | 없음 |
+| `LoginForm` | 로그인 폼 조합과 제출 처리 | `useLogin()` | 없음 | `onSubmit -> login()` | `email`, `password`, `emailError`, `passwordError`, `formError`, `isFormValid`, `isLoading`, `loginUser` |
+| `EmailInputField` | 이메일 입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-login-field-props"><code>LoginFieldProps</code></a> | `onChange -> setEmail(value)` | `email`, `emailError` |
+| `PasswordInputField` | 비밀번호 입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-login-field-props"><code>LoginFieldProps</code></a> | `onChange -> setPassword(value)` | `password`, `passwordError` |
+| `LoginSubmitButton` | 로그인 제출 버튼, `isFormValid = false` 또는 `isLoading = true`일 때 비활성화 | 없음 | <a href="#type-login-submit-button-props"><code>LoginSubmitButtonProps</code></a> | `onClick -> login()` | `isFormValid`, `isLoading` |
+| `LoginErrorMessage` | 로그인 요청 실패 폼 메시지 출력 | 없음 | <a href="#type-login-error-message-props"><code>LoginErrorMessageProps</code></a> | 없음 | `formError` |
+
+### B. 훅
+
+훅은 기능 단위로 나누어 정의한다.
+
+#### I. 훅 타입
+
+<a id="type-login-state"></a>
+
+##### a. `LoginState`
+
+```ts
+type LoginState = {
   email: string;
   password: string;
+  emailError: string;
+  passwordError: string;
+  formError: string;
+  isFormValid: boolean;
   isLoading: boolean;
-  isSuccess: boolean;
-  errorMessage: string;
-  user: User | null;
-  isLoggedIn: boolean;
+  loginUser: User | null;
+};
+```
+
+<a id="type-login-actions"></a>
+
+##### b. `LoginActions`
+
+```ts
+type LoginActions = {
   setEmail: (value: string) => void;
   setPassword: (value: string) => void;
   login: () => Promise<void>;
   resetLoginState: () => void;
-}
-
-interface LoginFieldProps {
-  value: string;
-  disabled?: boolean;
-  onChange: (value: string) => void;
-}
-
-interface LoginSubmitButtonProps {
-  isLoading: boolean;
-  disabled: boolean;
-  onClick: () => void;
-}
-
-interface LoginErrorMessageProps {
-  message: string;
-}
+};
 ```
 
-### 훅
+<a id="type-use-login-return"></a>
 
-훅 이름은 `useLogin`이다.
+##### c. `UseLoginReturn`
 
-역할은 아래와 같다.
+```ts
+type UseLoginReturn = LoginState & LoginActions;
+```
 
-- 로그인 UI 상태 관리
-- 로그인 요청 실행
-- 서비스 호출
-- 성공/실패에 따라 상태 업데이트
+#### II. useLogin
 
-입력값은 훅 내부 상태로 관리하는 방식을 기본으로 한다.
+##### a. 훅 요약
 
-- `email`
-- `password`
+| 항목 | 내용 |
+| --- | --- |
+| 훅명 | `useLogin()` |
+| 역할 | 로그인 UI 상태 관리, 입력값 실시간 검증, 로그인 버튼 활성화 상태 관리, 로그인 요청 실행, 로그인 결과 상태 관리, 로그인 사용자 정보 관리, 로그인 상태 초기화 |
+| 호출 Service | `loginService.validateEmail(email)`, `loginService.validatePassword(password)`, `loginService.login(email, password)` |
 
-훅 내부 상태는 아래와 같다.
+##### b. 상태
 
-- `email`
-- `password`
-- `isLoading`
-- `isSuccess`
-- `errorMessage`
-- `user`
-- `isLoggedIn`
+| 변수 명 | 범위 | 초기 값 | 역할 |
+| --- | --- | --- | --- |
+| `email` | `public` | `""` | 로그인 UI 상태 관리 |
+| `password` | `public` | `""` | 로그인 UI 상태 관리 |
+| `emailError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `passwordError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `formError` | `public` | `""` | 로그인 결과 상태 관리 |
+| `isFormValid` | `public` | `false` | 로그인 버튼 활성화 상태 관리 |
+| `isLoading` | `public` | `false` | 로그인 요청 실행 |
+| `loginUser` | `public` | `null` | 로그인 사용자 정보 관리 |
 
-`login(email, password)` 또는 내부 상태 기반 `login()` 함수는 아래 순서로 동작한다.
+##### c. 함수
 
-1. `isLoading = true`
-2. `errorMessage = ""`
-3. `isSuccess = false`
-4. 로그인 서비스의 `login(email, password)` 호출
-5. 서비스 결과에 따라 상태 업데이트
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 service | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `setEmail()` | `public` | `value: string` | `void` | <code>loginService.validateEmail(email: string): boolean</code> | `email`, `emailError`, `formError`, `isFormValid`, `loginUser` |
+| `setPassword()` | `public` | `value: string` | `void` | <code>loginService.validatePassword(password: string): boolean</code> | `password`, `passwordError`, `formError`, `isFormValid`, `loginUser` |
+| `login()` | `public` | 없음 | `Promise<void>` | <code>loginService.login(email: string, password: string): Promise&lt;<a href="#type-login-result">LoginResult</a>&gt;</code> | `isLoading`, `formError`, `loginUser` |
+| `resetLoginState()` | `public` | 없음 | `void` | 없음 | `email`, `password`, `emailError`, `passwordError`, `formError`, `isFormValid`, `isLoading`, `loginUser` |
 
-서비스 응답은 아래 형태를 기준으로 한다.
+##### d. 동작 규칙
+
+- `setEmail()`
+  - `email` 값을 갱신한다.
+  - `loginService.validateEmail(email)`를 호출해 `emailError`를 갱신한다.
+  - 이전 로그인 결과 상태를 초기화하기 위해 `formError = ""`, `loginUser = null`로 갱신한다.
+  - `email`과 `password`가 모두 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `setPassword()`
+  - `password` 값을 갱신한다.
+  - `loginService.validatePassword(password)`를 호출해 `passwordError`를 갱신한다.
+  - 이전 로그인 결과 상태를 초기화하기 위해 `formError = ""`, `loginUser = null`로 갱신한다.
+  - `email`과 `password`가 모두 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `login()`
+  - `isFormValid = false`이면 로그인 요청을 진행하지 않는다.
+  - 시작 시 `isLoading = true`, `formError = ""`, `loginUser = null`
+  - 실행 중 `loginService.login(email, password)`를 호출한다.
+- `resetLoginState()`
+  - 로그인 상태와 검증 메시지를 모두 초기값으로 되돌린다.
+
+##### e. 상태 갱신 규칙
+
+| 상황 | 상태 갱신 |
+| --- | --- |
+| 이메일 입력 변경 | `email`, `emailError`, `formError = ""`, `isFormValid`, `loginUser = null` |
+| 비밀번호 입력 변경 | `password`, `passwordError`, `formError = ""`, `isFormValid`, `loginUser = null` |
+| 성공 | `loginUser = data`, `formError = ""` |
+| 실패 | `loginUser = null`, `formError = message` |
+| 종료 | `isLoading = false` |
+| 초기화 | `email = ""`, `password = ""`, `emailError = ""`, `passwordError = ""`, `formError = ""`, `isFormValid = false`, `isLoading = false`, `loginUser = null` |
+
+### C. 서비스
+
+서비스는 기능 단위로 나누어 정의한다.
+
+#### I. 서비스 타입
+
+<a id="type-login-result"></a>
+
+##### a. `LoginResult`
 
 ```ts
 type LoginResult =
@@ -135,157 +244,130 @@ type LoginResult =
     };
 ```
 
-성공 시 상태 갱신:
+#### II. `loginService`
 
-- `isSuccess = true`
-- `isLoggedIn = true`
-- `user = data`
-- `errorMessage = ""`
+##### a. 서비스 요약
 
-실패 시 상태 갱신:
+| 항목 | 내용 |
+| --- | --- |
+| 서비스명 | `loginService` |
+| 역할 | 입력값 검증, 로그인 비즈니스 로직 수행, 레포지토리 호출, 최종 결과 반환 |
+| 호출 Repository | `authRepository.login(email, password)` |
 
-- `isSuccess = false`
-- `isLoggedIn = false`
-- `user = null`
-- `errorMessage = message`
+##### b. 함수
 
-종료 시 상태 갱신:
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 대상 | 실패 메시지 | 역할 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `login()` | `public` | `email: string`, `password: string` | <code>Promise&lt;<a href="#type-login-result">LoginResult</a>&gt;</code> | <code>authRepository.login(email: string, password: string): Promise&lt;<a href="#type-login-api-response">LoginApiResponse</a>&gt;</code> | `이메일 또는 비밀번호가 올바르지 않습니다.`<br>`서버 오류가 발생했습니다.`<br>`네트워크 오류가 발생했습니다. 다시 시도해주세요.` | 로그인 성공/실패 결과를 반환한다. |
+| `validateEmail()` | `public` | `email: string` | `boolean` | 없음 | `이메일 형식과 맞지 않음` | 실시간 입력 검증과 로그인 실행 전 이메일 형식 검증에 사용한다. |
+| `validatePassword()` | `public` | `password: string` | `boolean` | 없음 | `비밀번호를 입력해주세요` | 실시간 입력 검증과 로그인 실행 전 비밀번호 입력 여부 검증에 사용한다. |
 
-- `isLoading = false`
+##### c. 동작 규칙
 
-### 서비스
+- `login()`
+  - 시작 시 `validateEmail(email)`를 호출한다.
+  - `validateEmail()` 또는 `validatePassword()` 결과가 `false`이면 로그인 요청을 진행하지 않는다.
+- `validateEmail()`
+  - 정규식은 `const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;`
+    - 이메일은 `@`를 포함해야 한다.
+    - 도메인 형식을 만족해야 한다.
+    - 공백은 허용하지 않는다.
+  - 이메일 검증이 통과하면 다음으로 `validatePassword(password)`를 호출한다.
+- `validatePassword()`
+  - 비밀번호 값이 비어 있는지 확인한다.
+  - 두 검증이 모두 통과하면 `authRepository.login(email, password)`를 호출한다.
 
-서비스 이름은 `loginService`다.
+##### d. 반환 규칙
 
-역할은 아래와 같다.
+- `login()`
 
-- 입력값 검증
-- 로그인 비즈니스 로직 수행
-- 레포지토리 호출
-- 최종 결과를 훅에 반환
+| 상황 | 반환값 |
+| --- | --- |
+| 로그인 성공 | `success: true`, <code>data: <a href="#type-user">User</a></code> |
+| 로그인 실패 | `success: false`, `message: string` |
 
-함수 시그니처는 아래와 같다.
+- `validateEmail()`
 
-```ts
-login(email: string, password: string): Promise<LoginResult>
-```
+| 상황 | 반환값 |
+| --- | --- |
+| 이메일 형식 불일치 | `false` |
+| 이메일 형식 일치 | `true` |
+    
+- `validatePassword()`
 
-### 레포지토리
+| 상황 | 반환값 |
+| --- | --- |
+| 비밀번호 누락 | `false` |
+| 비밀번호 값 존재 | `true` |
 
-레포지토리 이름은 `authRepository`다.
+### D. 레포지토리
 
-역할은 아래와 같다.
+레포지토리는 기능 단위로 나누어 정의한다.
 
-- API 요청 전송
-- 서버 응답 수신
-- 응답 데이터를 서비스 계층에 전달
+#### I. API 타입
 
-함수 시그니처는 아래와 같다.
+<a id="type-login-api-response"></a>
 
-```ts
-login(email: string, password: string): Promise<LoginApiResponse>
-```
-
-### 서버
-
-서버는 요청으로 전달받은 이메일과 비밀번호를 검증하고 인증 결과를 반환한다.
-
-## 3. 서비스 내부 처리 순서
-
-로그인 서비스의 `login()` 함수는 아래 순서로 동작한다.
-
-1. 이메일 형식 검증 함수 `validateEmail(email)` 호출
-2. 비밀번호 공백 검증 함수 `validatePassword(password)` 호출
-3. 두 검증이 모두 통과하면 `authRepository.login(email, password)` 호출
-
-검증 실패 시 반환 메시지는 아래 규칙을 따른다.
-
-- 이메일 형식 오류: `이메일 형식과 맞지 않음`
-- 비밀번호 누락: `비밀번호를 입력해주세요`
-
-## 4. 이메일 검증 함수 명세
-
-함수명은 `validateEmail`이다.
+##### a. `LoginApiResponse`
 
 ```ts
-function validateEmail(email: string): boolean
+type LoginApiResponse = LoginResult;
 ```
 
-예시 정규식:
+#### II. `authRepository`
 
-```ts
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-```
+##### a. 레포지토리 요약
 
-규칙은 아래와 같다.
+| 항목 | 내용 |
+| --- | --- |
+| 레포지토리명 | `authRepository` |
+| 역할 | API 요청 전송, 서버 응답 수신, 응답 데이터를 서비스 계층에 전달 |
+| 호출 API | `POST /api/auth/login` |
 
-- 이메일은 `@`를 포함해야 한다.
-- 도메인 형식을 만족해야 한다.
-- 공백은 허용하지 않는다.
+##### b. 함수
 
-반환값:
+| 함수 명 | 받는 props | return 값 | 호출하는 API | 역할 |
+| --- | --- | --- | --- | --- |
+| `login()` | `email: string`, `password: string` | <code>Promise&lt;<a href="#type-login-api-response">LoginApiResponse</a>&gt;</code> | `POST /api/auth/login` | 로그인 API 요청 후 응답 결과를 반환한다. |
 
-- 유효한 이메일이면 `true`
-- 유효하지 않으면 `false`
+##### c. 요청 규칙
 
-## 5. 비밀번호 검증 함수 명세
+| 항목 | 내용 |
+| --- | --- |
+| Method | `POST` |
+| URL | `/api/auth/login` |
+| 요청 본문 | `email`, `password` |
 
-함수명은 `validatePassword`다.
+##### d. 동작 규칙
 
-```ts
-function validatePassword(password: string): boolean
-```
+- `login()`
+  - `email`, `password`를 요청 바디에 담는다.
+  - `POST /api/auth/login`으로 요청을 전송한다.
+  - 서버 응답을 <a href="#type-login-api-response"><code>LoginApiResponse</code></a> 형태로 반환한다.
 
-현재 로그인 명세에서는 아래 규칙만 적용한다.
+##### e. 반환 규칙
 
-- 빈 문자열이 아니어야 한다.
+| 상황 | 반환값 |
+| --- | --- |
+| 로그인 성공 | `success: true`, <code>data: <a href="#type-user">User</a></code> |
+| 로그인 실패 | `success: false`, `message: string` |
 
-추후 아래 조건으로 확장할 수 있다.
+### E. 서버
 
-- 최소 8자 이상
-- 영문/숫자 포함
-- 특수문자 포함
+#### I. 로그인 API
 
-반환값:
+##### a. API 요약
 
-- 비밀번호가 존재하면 `true`
-- 비어 있으면 `false`
-
-## 6. Repository 명세
-
-레포지토리 이름은 `authRepository`다.
-
-반환 타입은 아래와 같다.
-
-```ts
-type LoginApiResponse =
-  | {
-      success: true;
-      data: User;
-    }
-  | {
-      success: false;
-      message: string;
-    };
-```
-
-동작은 아래와 같다.
-
-1. 이메일과 비밀번호를 API 요청 바디에 담는다.
-2. 로그인 API를 호출한다.
-3. 응답 결과를 반환한다.
-
-## 7. API 스펙 정의
-
-로그인 API 스펙은 아래와 같다.
-
-| 항목 | 값 |
+| 항목 | 내용 |
 | --- | --- |
 | API 이름 | 로그인 API |
 | Method | `POST` |
 | URL | `/api/auth/login` |
+| 요청 본문 | `email`, `password` |
+| 처리 | 이메일과 비밀번호를 검증하고 로그인 성공/실패 결과를 판단한다. |
+| Response | `success`, `data` 또는 `message` |
 
-Request Body:
+##### b. 요청 본문 예시
 
 ```json
 {
@@ -294,7 +376,9 @@ Request Body:
 }
 ```
 
-성공 응답 예시:
+##### c. 응답 예시
+
+###### 1. 성공 응답 예시
 
 ```json
 {
@@ -303,12 +387,14 @@ Request Body:
     "id": 1,
     "email": "user@example.com",
     "name": "홍길동",
+    "username": "honggildong",
+    "avatarUrl": "https://example.com/avatar.png",
     "accessToken": "jwt-token"
   }
 }
 ```
 
-실패 응답 예시:
+###### 2. 실패 응답 예시
 
 ```json
 {
@@ -317,7 +403,7 @@ Request Body:
 }
 ```
 
-서버 에러 응답 예시:
+###### 3. 서버 에러 응답 예시
 
 ```json
 {
@@ -325,92 +411,3 @@ Request Body:
   "message": "서버 오류가 발생했습니다."
 }
 ```
-
-## 8. 서버 명세
-
-서버의 역할은 아래와 같다.
-
-- 요청 바디에서 이메일과 비밀번호 추출
-- 이메일로 사용자 조회
-- 사용자가 존재하지 않으면 실패 반환
-- 비밀번호 일치 여부 확인
-- 일치하면 로그인 성공 반환
-- 필요 시 `accessToken` 발급
-- 사용자 정보 반환
-
-## 9. 로그인 성공 시 처리
-
-로그인 성공 시 훅은 아래 상태를 갱신한다.
-
-- `isSuccess = true`
-- `isLoggedIn = true`
-- `user = 서버에서 받은 사용자 정보`
-- `errorMessage = ""`
-- `isLoading = false`
-
-필요 시 아래 추가 작업을 수행할 수 있다.
-
-- `accessToken` 저장
-- `refreshToken` 저장
-- 홈 화면으로 이동
-- 전역 auth store 업데이트
-
-## 10. 로그인 실패 시 처리
-
-로그인 실패 시 훅은 아래 상태를 갱신한다.
-
-- `isSuccess = false`
-- `isLoggedIn = false`
-- `user = null`
-- `errorMessage = 실패 메시지`
-- `isLoading = false`
-
-## 11. 예외 처리 규칙
-
-| 상황 | 메시지 |
-| --- | --- |
-| 이메일 검증 실패 | `이메일 형식과 맞지 않음` |
-| 비밀번호 누락 | `비밀번호를 입력해주세요` |
-| 서버 인증 실패 | `이메일 또는 비밀번호가 올바르지 않습니다.` |
-| 서버 오류 | `서버 오류가 발생했습니다.` |
-| 네트워크 오류 | `네트워크 오류가 발생했습니다. 다시 시도해주세요.` |
-
-## 12. 타입 정의 예시
-
-```ts
-type User = {
-  id: number;
-  email: string;
-  name: string;
-  accessToken?: string;
-};
-
-type LoginResult =
-  | {
-      success: true;
-      data: User;
-    }
-  | {
-      success: false;
-      message: string;
-    };
-```
-
-## 13. 권장 변수명 정리
-
-로그인 상태 관리는 아래 변수명으로 통일하는 것을 권장한다.
-
-- `email`
-- `password`
-- `isLoading`
-- `isSuccess`
-- `isLoggedIn`
-- `errorMessage`
-- `user`
-- `login`
-- `setEmail`
-- `setPassword`
-- `resetLoginState`
-
-메시지 변수는 `msg`보다 `errorMessage`를 사용한다.
-성공 여부도 `success` 또는 `isSuccess`로 일관되게 유지한다.
