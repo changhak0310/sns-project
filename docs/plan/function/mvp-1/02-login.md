@@ -238,41 +238,100 @@ public API flow (optional)
 
 #### 데이터 플로우
 
-```text
-route input
-  searchParams.redirect
-    -> validateRedirect
-    -> redirectTo
+##### 라우트 입력 데이터 플로우
 
-form input
-  email + password
-    -> validateLoginInput
-    -> normalizeEmail(email)
-    -> findUserByEmail(normalizedEmail)
-    -> user record
-    -> verifyPassword(password, passwordHash)
-    -> createAuthSession(user)
-    -> auth cookie
-    -> redirect(redirectTo || "/")
+```text
+searchParams.redirect
+  -> validateRedirect
+  -> redirectTo
 ```
 
 | 단계 | 입력 데이터 | 처리 | 출력 데이터 |
 | --- | --- | --- | --- |
-| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부 검증 | `redirectTo` |
-| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식/빈 값 검사 | `fieldErrors` 또는 다음 단계 입력 |
+| 라우트 진입 | `searchParams.redirect` | `validateRedirect`로 내부 경로 여부를 검증한다 | `redirectTo` |
+
+###### 예외 상황
+
+- 잘못된 `redirect`는 `AUTH_DEFAULT_REDIRECT`인 `/`로 fallback 한다.
+- 외부 URL, protocol 포함 값, `//` 경로는 허용하지 않는다.
+
+##### 폼 입력 데이터 플로우
+
+```text
+email + password
+  -> validateLoginInput
+  -> fieldErrors or next step input
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
+| 폼 입력 | `email`, `password` | `validateLoginInput`으로 형식과 빈 값을 검사한다 | `fieldErrors` 또는 다음 단계 입력 |
+
+###### 예외 상황
+
+- 입력 검증 실패 시 `fieldErrors`, `values`를 반환한다.
+- 공백 입력은 제출 불가로 처리한다.
+- 실패 시 사용자가 입력한 값은 유지한다.
+
+##### 인증 데이터 플로우
+
+```text
+email
+  -> normalizeEmail(email)
+  -> normalizedEmail
+  -> findUserByEmail(normalizedEmail)
+  -> user record
+  -> verifyPassword(password, passwordHash)
+  -> isPasswordValid
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
 | 이메일 정규화 | `email` | trim, lowercase 처리 | `normalizedEmail` |
 | 사용자 조회 | `normalizedEmail` | `findUserByEmail({ email: normalizedEmail })` | `user` 또는 `null` |
 | 비밀번호 검증 | `password`, `user.passwordHash` | `verifyPassword` 실행 | `isPasswordValid` |
+
+###### 예외 상황
+
+- 사용자 없음 또는 비밀번호 불일치는 같은 공통 인증 실패로 처리한다.
+- 인증 실패 시 `formError`, `values`를 반환한다.
+- 실패 메시지는 계정 존재 여부를 드러내지 않는다.
+
+##### 세션 데이터 플로우
+
+```text
+user
+  -> AuthSession
+  -> createAuthSession(user)
+  -> auth cookie
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
 | 인증 성공 데이터 정리 | `user` | 세션 저장용 최소 정보만 추출 | `AuthSession` |
 | 세션 저장 | `AuthSession` | `createAuthSession`으로 쿠키 저장 | `auth cookie` |
+
+###### 예외 상황
+
+- 세션 저장 실패 시 로그인 실패로 처리하고 공통 에러를 반환한다.
+- 세션에는 최소 식별 정보만 저장하고 비밀번호 정보는 포함하지 않는다.
+
+##### 완료 데이터 플로우
+
+```text
+redirectTo + auth cookie
+  -> redirect(redirectTo || "/")
+  -> logged-in destination
+```
+
+| 단계 | 입력 데이터 | 처리 | 출력 데이터 |
+| --- | --- | --- | --- |
 | 최종 이동 | `redirectTo`, 세션 저장 결과 | 성공 시 `redirect(redirectTo || "/")` | 로그인 완료 화면 이동 |
 
-실패 분기:
+###### 예외 상황
 
-- 입력 검증 실패: `fieldErrors`, `values` 반환
-- 사용자 없음 또는 비밀번호 불일치: `formError`, `values` 반환
-- 잘못된 `redirect`: `AUTH_DEFAULT_REDIRECT`인 `/` 사용
-- 세션 저장 실패: 로그인 실패로 처리하고 공통 에러 반환
+- `redirectTo`가 없으면 `/`로 이동한다.
+- 보호 라우트에서 온 사용자는 로그인 후 원래 내부 경로로 복귀해야 한다.
 
 #### 주요 상수와 함수
 
