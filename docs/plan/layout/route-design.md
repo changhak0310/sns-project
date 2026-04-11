@@ -19,6 +19,7 @@
 | `/` | 홈 피드 | 로그인 필요 | 피드에서 상세 오버레이 진입 |
 | `/p/[shortcode]` | 게시물 상세 | 로그인 필요 | 직접 진입 시 단독 상세 |
 | `/create` | 게시물 작성 | 로그인 필요 | 성공 시 새 permalink 이동 |
+| `/design-system` | 디자인 시스템 프리뷰 | 로그인 필요 | 내부 UI 기준 확인용 |
 | `/u/[username]` | 프로필 | 로그인 필요 | `tab` query로 `posts/saved` 전환 |
 | `/u/[username]/edit` | 프로필 수정 | 로그인 필요 | 본인만 접근 |
 | `/explore` | 탐색 | 로그인 필요 | 추천 유저/게시물 탐색 |
@@ -44,6 +45,8 @@ app/
     error.tsx (optional)
     page.tsx
     create/
+      page.tsx
+    design-system/
       page.tsx
     explore/
       page.tsx
@@ -76,7 +79,7 @@ app/
 ## 4. 접근 규칙
 
 - `/signup`, `/login`은 비로그인 진입 라우트다
-- `/`, `/p/[shortcode]`, `/create`, `/u/[username]`, `/u/[username]/edit`, `/explore`, `/notifications`는 로그인 이후 경험으로 본다
+- `/`, `/p/[shortcode]`, `/create`, `/design-system`, `/u/[username]`, `/u/[username]/edit`, `/explore`, `/notifications`는 로그인 이후 경험으로 본다
 - 세션이 없으면 보호 라우트에서 `/login?redirect=...`로 보낸다
 - `redirect`는 내부 경로만 허용한다
 - `/u/[username]?tab=saved`는 자기 프로필에서만 유효하다
