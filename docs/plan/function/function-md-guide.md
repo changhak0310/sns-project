@@ -3,7 +3,7 @@
 이 문서는 `docs/plan/function` 아래에 기능 명세 MD 파일을 작성할 때 사용하는 공통 가이드다.
 
 기준 문서:
-- [login-state-management-guid.md](./login-state-management-guid.md)
+- [management-guid.md](./management-guid.md)
 - [layer.md](../layout/layer.md)
 - [design-system.md](../layout/design-system.md)
 - [screen-patterns.md](../layout/design-system/screen-patterns.md)
