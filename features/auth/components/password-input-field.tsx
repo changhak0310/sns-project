@@ -2,18 +2,18 @@ import { LockKeyhole } from "lucide-react";
 
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import type { SignupFieldProps } from "@/types/auth";
+import type { AuthFieldProps } from "@/types/auth";
 
 export function PasswordInputField({
   value,
   fieldErrorMessage,
   disabled = false,
   onChange,
-}: SignupFieldProps) {
+}: AuthFieldProps) {
   return (
-    <FormField label="비밀번호" htmlFor="signup-password" required>
+    <FormField label="비밀번호" htmlFor="auth-password" required>
       <Input
-        id="signup-password"
+        id="auth-password"
         type="password"
         value={value}
         placeholder="비밀번호"
