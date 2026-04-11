@@ -364,7 +364,7 @@ function FormsPanel({
             {activeAuthForm === "login" ? (
               <LoginForm formError="이메일 또는 비밀번호를 다시 확인해 주세요." />
             ) : (
-              <SignupForm passwordError="비밀번호는 8자 이상이어야 합니다." />
+              <SignupForm />
             )}
           </AuthShell>
         </CardContent>

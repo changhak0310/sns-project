@@ -1,78 +1,84 @@
-import { LockKeyhole, Mail, UserRound } from "lucide-react";
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { FormField } from "@/components/ui/form-field";
-import { InlineMessage } from "@/components/ui/inline-message";
-import { Input } from "@/components/ui/input";
+import type { FormEvent } from "react";
+
 import { AuthFormCard } from "@/features/auth/components/auth-form-card";
 import { AuthHeader } from "@/features/auth/components/auth-header";
 import { AuthSwitchLink } from "@/features/auth/components/auth-switch-link";
 
-type SignupFormProps = {
-  displayName?: string;
-  email?: string;
-  nameError?: string;
-  emailError?: string;
-  passwordError?: string;
-  formError?: string;
-  pending?: boolean;
-  className?: string;
-};
+import { useSignup } from "../hooks/use-signup";
+import { ConfirmPasswordInputField } from "./confirm-password-input-field";
+import { EmailInputField } from "./email-input-field";
+import { PasswordInputField } from "./password-input-field";
+import { SignupErrorMessage } from "./signup-error-message";
+import { SignupSubmitButton } from "./signup-submit-button";
+import { UsernameInputField } from "./username-input-field";
 
-export function SignupForm({
-  displayName = "Orbit Editor",
-  email = "orbit@example.com",
-  nameError,
-  emailError,
-  passwordError,
-  formError,
-  pending = false,
-  className,
-}: SignupFormProps) {
+export function SignupForm() {
+  const {
+    username,
+    email,
+    password,
+    confirmPassword,
+    usernameError,
+    emailError,
+    passwordError,
+    confirmPasswordError,
+    formError,
+    isFormValid,
+    isLoading,
+    setUsername,
+    setEmail,
+    setPassword,
+    setConfirmPassword,
+    signup,
+  } = useSignup();
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void signup();
+  }
+
   return (
-    <AuthFormCard className={className}>
+    <AuthFormCard>
       <div className="flex flex-col gap-6">
         <AuthHeader
-          title="짧은 카피와 선명한 액션으로 바로 시작합니다."
-          description="display name 하나만 정하면 프로필, 저장 탭, 추천 피드까지 같은 톤으로 이어집니다."
+          title="짧은 정보만 정확히 입력하고 바로 계정을 만드세요."
+          description="유저 이름, 이메일, 비밀번호를 한 번에 정리하고 같은 흐름 안에서 회원가입을 완료합니다."
         />
-        <form className="flex flex-col gap-5">
-          <FormField label="이름" htmlFor="signup-name" required>
-            <Input
-              id="signup-name"
-              type="text"
-              defaultValue={displayName}
-              placeholder="표시 이름"
-              leadingIcon={<UserRound className="size-4" />}
-              error={nameError}
-            />
-          </FormField>
-          <FormField label="이메일" htmlFor="signup-email" required>
-            <Input
-              id="signup-email"
-              type="email"
-              defaultValue={email}
-              placeholder="name@company.com"
-              leadingIcon={<Mail className="size-4" />}
-              error={emailError}
-            />
-          </FormField>
-          <FormField label="비밀번호" htmlFor="signup-password" required>
-            <Input
-              id="signup-password"
-              type="password"
-              defaultValue="password"
-              placeholder="비밀번호"
-              leadingIcon={<LockKeyhole className="size-4" />}
-              error={passwordError}
-            />
-          </FormField>
-          {formError ? (
-            <InlineMessage tone="error" message={formError} />
-          ) : null}
-          <Button fullWidth loading={pending}>
-            계정 만들기
-          </Button>
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+          <UsernameInputField
+            value={username}
+            fieldErrorMessage={usernameError}
+            disabled={isLoading}
+            onChange={setUsername}
+          />
+          <EmailInputField
+            value={email}
+            fieldErrorMessage={emailError}
+            disabled={isLoading}
+            onChange={setEmail}
+          />
+          <PasswordInputField
+            value={password}
+            fieldErrorMessage={passwordError}
+            disabled={isLoading}
+            onChange={setPassword}
+          />
+          <ConfirmPasswordInputField
+            value={confirmPassword}
+            fieldErrorMessage={confirmPasswordError}
+            disabled={isLoading}
+            onChange={setConfirmPassword}
+          />
+          {formError ? <SignupErrorMessage message={formError} /> : null}
+          <SignupSubmitButton
+            isLoading={isLoading}
+            disabled={!isFormValid || isLoading}
+            onClick={() => {
+              void signup();
+            }}
+          />
         </form>
         <AuthSwitchLink
           label="이미 계정이 있나요?"
