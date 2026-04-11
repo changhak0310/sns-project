@@ -318,9 +318,9 @@ type UseAppShellReturn = AppShellState & AppShellComputed & AppShellActions;
   - 상세 또는 서브 라우트에서는 뒤로가기 버튼 노출 여부를 함께 계산한다.
   - 모바일 네비게이션을 노출하는 라우트에서는 `showMenuButton = true`로 계산한다.
 - `getNavItems()`
-  - 홈, 작성, 북마크, 프로필 네비게이션 항목을 생성한다.
-  - `username`이 있으면 프로필 href를 `/profile/{username}`으로 계산한다.
-  - `username`이 없으면 프로필 href를 `/profile`로 계산한다.
+  - 홈, 작성, 프로필 네비게이션 항목을 생성한다.
+  - `username`이 있으면 프로필 href를 `/u/{username}`으로 계산한다.
+  - `username`이 없으면 프로필 href를 `/`로 계산한다.
 - `getActiveNavHref()`
   - `pathname`과 `navItems`의 `href`, `matchPrefixes`를 비교한다.
   - 일치하는 항목이 있으면 해당 `href`를 반환한다.
@@ -340,8 +340,8 @@ type UseAppShellReturn = AppShellState & AppShellComputed & AppShellActions;
 
 | 상황 | 반환값 |
 | --- | --- |
-| `username` 존재 | 프로필 href가 `/profile/{username}`인 <code><a href="#type-nav-item">NavItem</a>[]</code> |
-| `username` 없음 | 프로필 href가 `/profile`인 <code><a href="#type-nav-item">NavItem</a>[]</code> |
+| `username` 존재 | 프로필 href가 `/u/{username}`인 <code><a href="#type-nav-item">NavItem</a>[]</code> |
+| `username` 없음 | 프로필 href가 `/`인 <code><a href="#type-nav-item">NavItem</a>[]</code> |
 
 - `getActiveNavHref()`
 

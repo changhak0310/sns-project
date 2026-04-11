@@ -1,26 +1,140 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ds-color-primary-50: #f7f4f1;
+  --ds-color-primary-300: #9d8f84;
+  --ds-color-primary-700: #2f2a27;
+  --ds-color-primary-900: #181513;
+
+  --ds-color-neutral-0: #ffffff;
+  --ds-color-neutral-50: #fbf8f3;
+  --ds-color-neutral-100: #f4ede3;
+  --ds-color-neutral-200: #e6ddd1;
+  --ds-color-neutral-300: #cbbdab;
+  --ds-color-neutral-500: #8a7d72;
+  --ds-color-neutral-600: #665d55;
+  --ds-color-neutral-700: #4f4842;
+  --ds-color-neutral-800: #2f2a27;
+  --ds-color-neutral-900: #201c19;
+  --ds-color-neutral-950: #14110f;
+
+  --ds-color-accent-100: #ffe5da;
+  --ds-color-accent-200: #ffc6b1;
+  --ds-color-accent-300: #ff9b74;
+  --ds-color-accent-400: #f87d57;
+  --ds-color-accent-500: #ef6d47;
+
+  --ds-color-success-100: #e7f7ec;
+  --ds-color-success-500: #2c8f5a;
+
+  --ds-color-warning-100: #fff3d9;
+  --ds-color-warning-500: #d6922c;
+  --ds-color-warning-600: #b47a1b;
+  --ds-color-warning-700: #82550f;
+
+  --ds-color-error-100: #ffe8e8;
+  --ds-color-error-200: #ffcaca;
+  --ds-color-error-500: #d15252;
+  --ds-color-error-600: #b13e3e;
+
+  --ds-border-subtle: rgba(32, 28, 25, 0.1);
+  --ds-border-strong: rgba(32, 28, 25, 0.22);
+
+  --ds-shadow-sm: 0 14px 36px rgba(25, 21, 18, 0.08);
+  --ds-shadow-md: 0 24px 64px rgba(25, 21, 18, 0.14);
+  --ds-shadow-lg: 0 36px 88px rgba(25, 21, 18, 0.18);
+
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 16px;
+  --ds-radius-xl: 24px;
+  --ds-radius-full: 9999px;
+
+  --ds-content-narrow: 420px;
+  --ds-content-default: 960px;
+  --ds-content-wide: 1240px;
+
+  --ds-mood-archive-bg: #fbf8f3;
+  --ds-mood-focus-bg: #fcfaf6;
+  --ds-mood-focus-dark-bg: #11100f;
+  --ds-mood-focus-dark-fg: #f6f3ef;
+  --ds-mood-discover-bg: #fff6f1;
+  --ds-mood-alert-bg: #fff7ef;
+
+  --background: var(--ds-color-neutral-50);
+  --foreground: var(--ds-color-neutral-950);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary-50: var(--ds-color-primary-50);
+  --color-primary-300: var(--ds-color-primary-300);
+  --color-primary-700: var(--ds-color-primary-700);
+  --color-primary-900: var(--ds-color-primary-900);
+  --color-neutral-0: var(--ds-color-neutral-0);
+  --color-neutral-50: var(--ds-color-neutral-50);
+  --color-neutral-100: var(--ds-color-neutral-100);
+  --color-neutral-200: var(--ds-color-neutral-200);
+  --color-neutral-300: var(--ds-color-neutral-300);
+  --color-neutral-500: var(--ds-color-neutral-500);
+  --color-neutral-600: var(--ds-color-neutral-600);
+  --color-neutral-700: var(--ds-color-neutral-700);
+  --color-neutral-800: var(--ds-color-neutral-800);
+  --color-neutral-900: var(--ds-color-neutral-900);
+  --color-neutral-950: var(--ds-color-neutral-950);
+  --color-accent-100: var(--ds-color-accent-100);
+  --color-accent-200: var(--ds-color-accent-200);
+  --color-accent-300: var(--ds-color-accent-300);
+  --color-accent-400: var(--ds-color-accent-400);
+  --color-accent-500: var(--ds-color-accent-500);
+  --color-success-100: var(--ds-color-success-100);
+  --color-success-500: var(--ds-color-success-500);
+  --color-warning-100: var(--ds-color-warning-100);
+  --color-warning-500: var(--ds-color-warning-500);
+  --color-warning-600: var(--ds-color-warning-600);
+  --color-warning-700: var(--ds-color-warning-700);
+  --color-error-100: var(--ds-color-error-100);
+  --color-error-200: var(--ds-color-error-200);
+  --color-error-500: var(--ds-color-error-500);
+  --color-error-600: var(--ds-color-error-600);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-dm-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  color-scheme: light;
+  scroll-behavior: smooth;
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  font-family: var(--font-geist-sans), sans-serif;
+  background-image:
+    radial-gradient(circle at top, rgba(255, 149, 112, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 28%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(255, 149, 112, 0.28);
 }
