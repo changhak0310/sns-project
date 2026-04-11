@@ -1,3 +1,14 @@
+import { Grid3X3 } from "lucide-react";
+
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { FoundationScreen } from "@/features/app-shell/components/foundation-screen";
 
 export default async function ProfilePage({
@@ -19,31 +30,49 @@ export default async function ProfilePage({
       ]}
     >
       <div className="grid gap-4 lg:grid-cols-[0.95fr_1.25fr]">
-        <div className="rounded-[28px] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-0)] p-6 shadow-[var(--shadow-sm)]">
-          <div className="flex items-center gap-4">
-            <div className="flex size-16 items-center justify-center rounded-full bg-[var(--color-accent-100)] font-display text-2xl text-[var(--color-primary-900)]">
-              {username.slice(0, 1).toUpperCase()}
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-[var(--color-neutral-900)]">
-                @{username}
-              </p>
-              <p className="text-sm text-[var(--color-neutral-500)]">
-                profile shell placeholder
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="rounded-[28px] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-0)] p-6 shadow-[var(--shadow-sm)]">
-          <div className="grid grid-cols-3 gap-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={index}
-                className="aspect-square rounded-[22px] bg-[linear-gradient(140deg,_rgba(255,149,112,0.16),_rgba(22,28,36,0.08))]"
+        <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Avatar
+                alt={username}
+                fallback={username.slice(0, 2).toUpperCase()}
+                size="xl"
+                ring
+                status="online"
               />
-            ))}
-          </div>
-        </div>
+              <div>
+                <CardTitle>@{username}</CardTitle>
+                <CardDescription>profile shell placeholder</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Badge variant="soft" tone="accent">
+              posts
+            </Badge>
+            <Badge variant="outline" tone="neutral">
+              saved
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>Profile Grid</CardTitle>
+              <Grid3X3 className="h-4 w-4 text-[var(--ds-color-neutral-500)]" aria-hidden />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="aspect-square rounded-[22px] bg-[linear-gradient(140deg,rgba(255,149,112,0.16),rgba(22,28,36,0.08))]"
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </FoundationScreen>
   );
