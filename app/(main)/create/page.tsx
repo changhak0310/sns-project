@@ -44,11 +44,11 @@ export default function CreatePage() {
           </CardHeader>
           <CardContent className="space-y-5">
             <ImageFallback ratio="portrait" label="Post preview media" icon={<ImagePlus className="h-4 w-4" />} />
-            <FormField label="캡션">
+            <FormField label="캡션" htmlFor="caption">
               <Textarea
+                id="caption"
                 resize="none"
                 defaultValue="이미지 선택기, 캡션 입력, 제출 액션은 게시물 작성 기능에서 이어집니다."
-                showCounter
                 maxLength={140}
               />
             </FormField>

@@ -38,7 +38,7 @@ export default async function PostDetailPage({
                 detail
               </Badge>
               <Badge variant="outline" tone="neutral">
-                /p/{shortcode}
+                {`/p/${shortcode}`}
               </Badge>
             </div>
           </CardContent>

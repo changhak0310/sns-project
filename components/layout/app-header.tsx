@@ -3,6 +3,11 @@ import { ArrowLeft, Menu } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { AppHeaderProps } from "@/types/app-shell";
 
+const HEADER_LABELS = {
+  SUB_ROUTE: "서브 라우트",
+  MAIN_SHELL: "메인 셸",
+} as const;
+
 export function AppHeader({
   title,
   showBackButton,
@@ -38,7 +43,7 @@ export function AppHeader({
 
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--ds-color-neutral-500)]">
-            {showBackButton ? "Sub Route" : "Main Shell"}
+            {showBackButton ? HEADER_LABELS.SUB_ROUTE : HEADER_LABELS.MAIN_SHELL}
           </p>
           <p className="truncate font-display text-[1.7rem] leading-none tracking-[-0.05em] text-[var(--ds-color-primary-900)] lg:text-[2rem]">
             {title}

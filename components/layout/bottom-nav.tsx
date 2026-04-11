@@ -37,8 +37,10 @@ export function BottomNav({ navItems, activeHref }: BottomNavProps) {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-[22px] px-3 py-3 text-xs font-semibold tracking-[0.04em] transition duration-200",
-                isPrimary
-                  ? "bg-[linear-gradient(135deg,var(--ds-color-accent-400),var(--ds-color-accent-500))] text-white shadow-[var(--ds-shadow-sm)]"
+                isPrimary && isActive
+                  ? "border border-[rgba(22,28,36,0.12)] bg-[linear-gradient(135deg,var(--ds-color-accent-500),var(--ds-color-accent-600))] text-white shadow-[var(--ds-shadow-md)]"
+                  : isPrimary
+                    ? "bg-[linear-gradient(135deg,var(--ds-color-accent-400),var(--ds-color-accent-500))] text-white shadow-[var(--ds-shadow-sm)]"
                   : "border border-transparent text-[var(--ds-color-neutral-600)] hover:border-[var(--ds-border-subtle)] hover:bg-[var(--ds-color-neutral-50)]",
                 isActive &&
                   !isPrimary &&

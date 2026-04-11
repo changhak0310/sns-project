@@ -1,4 +1,5 @@
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_ROUTE_SAFE_REGEX = /^[A-Za-z0-9._-]+$/;
 const RESERVED_USERNAMES = new Set(["undefined", "null"]);
 
 export function getUsernameValidationMessage(username: string) {
@@ -18,10 +19,20 @@ export function getUsernameValidationMessage(username: string) {
     return "사용할 수 없는 유저 이름입니다.";
   }
 
+  if (!USERNAME_ROUTE_SAFE_REGEX.test(username)) {
+    return "유저 이름에는 영문, 숫자, 하이픈(-), 언더스코어(_), 마침표(.)만 사용할 수 있습니다.";
+  }
+
   return "";
 }
 
 export function getEmailValidationMessage(email: string) {
+  email = email.trim();
+
+  if (email === "") {
+    return "이메일을 입력해주세요";
+  }
+
   if (!EMAIL_REGEX.test(email)) {
     return "이메일 형식과 맞지 않음";
   }

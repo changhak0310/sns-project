@@ -10,9 +10,12 @@ type AuthResponsePayload = {
 async function parseAuthResponse<T extends AuthApiResponse>(
   response: Response
 ): Promise<T> {
+  const status = response?.status ?? 0;
   const fallbackMessage =
-    response.status >= 500
+    status >= 500
       ? "서버 오류가 발생했습니다."
+      : status >= 400
+        ? "잘못된 요청입니다. 입력을 확인해주세요."
       : "네트워크 오류가 발생했습니다. 다시 시도해주세요.";
 
   try {

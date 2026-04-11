@@ -66,18 +66,32 @@ export function useLogin(): UseLoginReturn {
   }
 
   async function login() {
-    if (!state.isFormValid || state.isLoading) {
+    let shouldProceed = false;
+    let nextEmail = "";
+    let nextPassword = "";
+
+    setState((current) => {
+      if (!current.isFormValid || current.isLoading) {
+        return current;
+      }
+
+      shouldProceed = true;
+      nextEmail = current.email;
+      nextPassword = current.password;
+
+      return {
+        ...current,
+        isLoading: true,
+        formError: "",
+        loginUser: null,
+      };
+    });
+
+    if (!shouldProceed) {
       return;
     }
 
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      formError: "",
-      loginUser: null,
-    }));
-
-    const result = await loginService.login(state.email, state.password);
+    const result = await loginService.login(nextEmail, nextPassword);
 
     setState((current) => ({
       ...current,
