@@ -1,3 +1,14 @@
+import { MessageCircleMore, Heart } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ImageFallback } from "@/components/ui/image-fallback";
 import { FoundationScreen } from "@/features/app-shell/components/foundation-screen";
 
 export default async function PostDetailPage({
@@ -18,28 +29,51 @@ export default async function PostDetailPage({
         { label: "Fallback", value: "home" },
       ]}
     >
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[28px] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-0)] p-6 shadow-[var(--shadow-sm)]">
-          <div className="aspect-[4/5] rounded-[24px] bg-[radial-gradient(circle_at_top,_rgba(255,149,112,0.22),_transparent_48%),linear-gradient(135deg,_rgba(22,28,36,0.08),_rgba(22,28,36,0.02))]" />
-        </div>
+      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+          <CardContent className="space-y-4">
+            <ImageFallback ratio="portrait" label="Permalink media" />
+            <div className="flex items-center gap-2">
+              <Badge variant="soft" tone="accent">
+                detail
+              </Badge>
+              <Badge variant="outline" tone="neutral">
+                /p/{shortcode}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
         <div className="space-y-4">
-          <div className="rounded-[28px] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-0)] p-6 shadow-[var(--shadow-sm)]">
-            <p className="text-sm font-semibold text-[var(--color-neutral-800)]">
-              Detail Shell
-            </p>
-            <p className="mt-3 text-sm leading-6 text-[var(--color-neutral-600)]">
-              상세 화면 본문, 반응 액션, 댓글 영역은 이후 기능 문서에서
-              채워집니다.
-            </p>
-          </div>
-          <div className="rounded-[28px] border border-[var(--color-neutral-200)] bg-[var(--color-neutral-50)] p-6 shadow-[var(--shadow-sm)]">
-            <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-neutral-500)]">
-              Shortcode
-            </p>
-            <p className="mt-2 text-lg font-semibold text-[var(--color-neutral-900)]">
-              {shortcode}
-            </p>
-          </div>
+          <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+            <CardHeader>
+              <CardTitle>Detail Shell</CardTitle>
+              <CardDescription>
+                상세 화면 본문, 반응 액션, 댓글 영역은 이후 기능 문서에서 채워집니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex gap-3">
+              <Badge variant="soft" tone="accent" icon={<Heart className="h-3.5 w-3.5" />}>
+                Like
+              </Badge>
+              <Badge
+                variant="soft"
+                tone="neutral"
+                icon={<MessageCircleMore className="h-3.5 w-3.5" />}
+              >
+                Comment
+              </Badge>
+            </CardContent>
+          </Card>
+          <Card bordered elevated className="bg-[var(--ds-color-neutral-50)]">
+            <CardHeader>
+              <CardTitle>Shortcode</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="font-mono text-lg font-semibold text-[var(--ds-color-primary-900)]">
+                {shortcode}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </FoundationScreen>
