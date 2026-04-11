@@ -60,6 +60,13 @@
   --ds-mood-discover-bg: #fff6f1;
   --ds-mood-alert-bg: #fff7ef;
 
+  --color-highlight-soft: var(--ds-mood-discover-bg);
+  --color-overlay: rgba(20, 17, 15, 0.48);
+
+  --shadow-sm: var(--ds-shadow-sm);
+  --shadow-md: var(--ds-shadow-md);
+  --shadow-lg: var(--ds-shadow-lg);
+
   --background: var(--ds-color-neutral-50);
   --foreground: var(--ds-color-neutral-950);
 }
