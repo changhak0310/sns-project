@@ -11,16 +11,17 @@
 - 기능 정책은 디자인 시스템 문서보다 기능 문서와 feature 조합에서 다룬다
 - 모바일 우선으로 설계하고 데스크톱은 확장 레이아웃으로 대응한다
 - 이미지가 있는 화면은 텍스트보다 미디어 비율 안정성을 우선한다
-- 서비스 무드는 `Warm Archive + Editorial + Quiet Premium`으로 통일한다
+- 서비스 무드는 `Clean Social + Media First + Soft Editorial`로 통일한다
+- 전체 인상은 인스타그램처럼 가볍고 빠르게 읽히는 구조를 지향하되, 프로젝트 고유 토큰과 컴포넌트 규칙 안에서만 해석한다
 - empty, loading, error, pending 상태도 같은 시각 언어로 표현한다
 
 ## 2. 컬러 토큰
 
 | 그룹 | 역할 | 특성 |
 | --- | --- | --- |
-| `primary` | 주요 액션, 활성 상태, 강조 요소 | 웜 베이지/브라운 계열 5단계 (`50 ~ 900`) |
-| `neutral` | 텍스트, 배경, 구분선 | 크림/차콜 기반 7단계 (`0 ~ 950`) |
-| `accent` | 링크, 추천, 보조 강조 | 딥 틸 또는 올리브 계열 3단계 |
+| `primary` | 주요 액션, 활성 상태, 강조 요소 | 차콜/블랙 기반 5단계 (`50 ~ 900`) |
+| `neutral` | 텍스트, 배경, 구분선 | 화이트/라이트 그레이/차콜 기반 7단계 (`0 ~ 950`) |
+| `accent` | 링크, 추천, 보조 강조 | 코랄/오렌지/로즈 계열 3단계, 필요 시 sunset gradient 허용 |
 | `semantic.error` | 에러, 파괴적 액션 | 레드 계열 |
 | `semantic.success` | 저장 완료, 수정 완료 | 그린 계열 |
 | `semantic.warning` | draft, 주의 상태 | 앰버 계열 |
@@ -30,19 +31,19 @@
 
 | Mood | 한글 | 사용처 | 배경 계열 | 텍스트 계열 |
 | --- | --- | --- | --- | --- |
-| `archive` | 아카이브 | 프로필, 저장 탭, 피드 기본 바탕 | 웜 크림 | 브라운 |
-| `focus` | 집중 | 로그인, 작성, 수정 폼 | 라이트 베이지 | 차콜 |
+| `archive` | 아카이브 | 프로필, 저장 탭, 피드 기본 바탕 | 소프트 화이트 | 차콜 |
+| `focus` | 집중 | 로그인, 작성, 수정 폼 | 화이트 또는 매우 옅은 그레이 | 차콜 |
 | `focus-dark` | 집중(다크) | 로그인/회원가입의 다크 auth 화면 | 거의 검정 | 라이트 그레이/오프화이트 |
-| `discover` | 발견 | 탐색, 추천 섹션 | 소프트 올리브 | 딥 틸 |
-| `highlight` | 반응 | 좋아요, 저장, CTA | 웜 샌드 | 브라운/골드 |
+| `discover` | 발견 | 탐색, 추천 섹션 | 화이트 + 소프트 틴트 배경 | 차콜 + accent |
+| `highlight` | 반응 | 좋아요, 저장, CTA | 소프트 로즈/오렌지 틴트 | 차콜/화이트 |
 | `alert` | 알림 | 에러, 경고, system feedback | 소프트 레드/앰버 | 레드/브라운 |
 
 ## 4. 타이포그래피 토큰
 
 | 토큰 | 폰트 | 사용처 |
 | --- | --- | --- |
-| `font.display` | Fraunces 또는 Marcellus 계열 | 브랜드 헤드라인, auth 카피, 섹션 타이틀 |
-| `font.sans` | Pretendard | UI 전반, 버튼, 캡션, 메타, form |
+| `font.display` | Instrument Serif 또는 DM Serif Display | 브랜드 헤드라인, auth 카피, 섹션 타이틀 |
+| `font.sans` | Pretendard 또는 Geist | UI 전반, 버튼, 캡션, 메타, form |
 | `font.mono` | JetBrains Mono | 카운터, 시간, 숫자 메타 |
 
 | 사이즈 | px | 사용처 |
@@ -57,6 +58,7 @@
 
 - 줄 간격은 `1.4 / 1.6 / 1.8`
 - 메타 정보는 본문보다 최소 한 단계 작게 유지
+- auth, 피드, 탐색 화면은 긴 카피보다 짧은 라벨과 빠른 스캔을 우선한다
 
 ## 5. 간격 · 반경 · 이펙트 토큰
 
@@ -91,6 +93,8 @@
 - 메인 셸은 `Header + Content + BottomNav/DesktopSidebar + ModalSlot` 구조를 기본으로 한다
 - auth 화면은 중앙 정렬 단일 카드 레이아웃을 기본으로 한다
 - auth 화면이 다크 변형일 때는 `focus-dark` 무드와 단일 카드 레이아웃을 함께 사용한다
+- auth, 피드, 탐색은 화이트 기반 surface와 얇은 보더를 우선하고, 무거운 그림자는 최소화한다
+- 강조는 색을 많이 쓰기보다 미디어, 여백, 타이포 우선순위로 해결한다
 - auth 화면의 상세 시각 규칙, 상태 규칙, 컴포넌트 매핑은 `docs/plan/layout/design-system/screen-patterns.md`의 `인증 화면` 섹션을 기준으로 한다
 - 게시물 상세는 모바일에서 sheet/modal, 데스크톱에서 2열 상세 레이아웃을 허용한다
 - 프로필/저장/탐색은 정사각 썸네일 그리드를 공통 패턴으로 재사용한다
@@ -104,6 +108,7 @@
 | 공통 UI 컴포넌트 | `docs/plan/layout/design-system/components-ui.md` | `components/ui` |
 | 공통 레이아웃 컴포넌트 | `docs/plan/layout/design-system/components-layout.md` | `components/layout` |
 | 화면 조합 패턴 | `docs/plan/layout/design-system/screen-patterns.md` | `features/*/components` |
+| 로그인 화면 디자인 명세 | `docs/plan/layout/design-system/auth-login.md` | `features/auth/components` |
 
 ## 9. 1차 구현 우선순위
 
@@ -118,6 +123,7 @@
 - CSS 변수 기반 토큰
 - `clsx` + `tailwind-merge`
 - `class-variance-authority`
+- `shadcn/ui` 또는 Radix UI 기반 래핑 허용
 - `lucide-react`
 
 이 문서는 짧게 유지하고, 상세 컴포넌트 규칙은 분리 문서에서 관리한다.

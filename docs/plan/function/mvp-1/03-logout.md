@@ -1,191 +1,392 @@
-﻿# 기능 03 - 로그아웃
+# 로그아웃 명세
 
-## 개요
+## 1. 상태 변수 및 함수 정의
+
+로그아웃 기능은 공통 셸 레이아웃 안에서 전역 인증 상태에 따라 로그인 버튼 또는 프로필 버튼과 로그아웃 버튼을 노출하고, 로그아웃 요청 결과를 훅 상태로 관리한다.
+
+### A. 타입 정의
+
+#### I. 공통 타입
+
+<a id="type-session-user"></a>
+
+##### a. `SessionUser`
+
+```ts
+type SessionUser = {
+  id: number;
+  email: string;
+  username: string;
+  name: string;
+};
+```
+
+### B. 상태 변수 정의
+
+| 변수명 | 타입 | 설명 | 초기값 | 사용 컴포넌트 |
+| --- | --- | --- | --- | --- |
+| `sessionUser` | <a href="#type-session-user"><code>SessionUser</code></a> \| null | 현재 로그인 상태를 판단하는 전역 세션 사용자 정보, 값이 없으면 로그인 버튼만 노출한다 | `auth store 또는 session의 현재 값` | `AuthActionArea`, `LoginLinkButton`, `ProfileLinkButton`, `LogoutButton` |
+| `actionError` | `string` | 로그아웃 요청 실패 시 액션 영역에 보여줄 메시지 | `""` | `AuthActionArea`, `LogoutErrorMessage` |
+| `isLoading` | `boolean` | 로그아웃 요청 진행 여부 | `false` | `AuthActionArea`, `LogoutButton` |
+
+### C. 함수 정의
+
+| 함수명 | 시그니처 | 역할 | 사용 컴포넌트 |
+| --- | --- | --- | --- |
+| `logout()` | `() => Promise<void>` | 로그아웃 요청을 실행하고 성공 시 전역 세션 사용자 상태를 제거한다. | `AuthActionArea`, `LogoutButton` |
+
+## 목차
+
+- `1. 상태 변수 및 함수 정의`
+  - `A. 타입 정의`
+  - `B. 상태 변수 정의`
+  - `C. 함수 정의`
+- `2. 데이터 흐름`
+  - `A. 컴포넌트`
+  - `B. 훅`
+  - `C. 서비스`
+  - `D. 레포지토리`
+  - `E. 서버`
+- `3. 디자인 참조`
+  - `A. 디자인 참조 문서`
+
+## 2. 데이터 흐름
+
+```text
+A. 컴포넌트 -> B. 훅 -> C. 서비스 -> D. 레포지토리 -> E. 서버
+```
+
+참조 - [function-md-guide.md](../function-md-guide.md), [layer.md](../../layout/layer.md)
+
+### A. 컴포넌트
+
+로그아웃 기능은 공통 셸 안에서 인증 액션 영역을 기준으로 동작한다.
+
+#### I. 컴포넌트 구조
+
+```text
+AppHeader
+  -> AuthActionArea
+    -> LoginLinkButton
+    -> ProfileLinkButton
+    -> LogoutButton
+    -> LogoutErrorMessage
+
+DesktopSidebar
+  -> AuthActionArea
+    -> LoginLinkButton
+    -> ProfileLinkButton
+    -> LogoutButton
+    -> LogoutErrorMessage
+```
+
+#### II. 컴포넌트 타입
+
+<a id="type-auth-action-area-props"></a>
+
+##### a. `AuthActionAreaProps`
+
+```ts
+type AuthActionAreaProps = {
+  loginHref: string;
+  profileHref: string;
+};
+```
+
+<a id="type-auth-link-button-props"></a>
+
+##### b. `AuthLinkButtonProps`
+
+```ts
+type AuthLinkButtonProps = {
+  href: string;
+  label: string;
+};
+```
+
+<a id="type-logout-button-props"></a>
+
+##### c. `LogoutButtonProps`
+
+```ts
+type LogoutButtonProps = {
+  isLoading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+};
+```
+
+<a id="type-logout-error-message-props"></a>
+
+##### d. `LogoutErrorMessageProps`
+
+```ts
+type LogoutErrorMessageProps = {
+  message: string;
+};
+```
+
+#### III. 컴포넌트 정의
+
+| 컴포넌트명 | 역할 | 사용하는 Hook | 받는 props | 이벤트에서 호출하는 함수 | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `AuthActionArea` | 로그인되지 않았으면 로그인 버튼만, 로그인되어 있으면 프로필 버튼과 로그아웃 버튼을 함께 노출한다. | `useLogout()` | <a href="#type-auth-action-area-props"><code>AuthActionAreaProps</code></a> | 없음 | `actionError`, `isLoading` |
+| `LoginLinkButton` | `sessionUser = null`일 때 로그인 페이지 이동 버튼을 노출한다. | 없음 | <a href="#type-auth-link-button-props"><code>AuthLinkButtonProps</code></a> | 없음 | 없음 |
+| `ProfileLinkButton` | `sessionUser`가 있을 때 프로필 페이지 이동 버튼을 노출한다. | 없음 | <a href="#type-auth-link-button-props"><code>AuthLinkButtonProps</code></a> | 없음 | 없음 |
+| `LogoutButton` | 로그인된 상태에서 로그아웃 버튼을 노출하고, `isLoading = true`일 때 비활성화한다. | 없음 | <a href="#type-logout-button-props"><code>LogoutButtonProps</code></a> | `onClick -> logout()` | 없음 |
+| `LogoutErrorMessage` | 로그아웃 요청 실패 메시지를 출력한다. | 없음 | <a href="#type-logout-error-message-props"><code>LogoutErrorMessageProps</code></a> | 없음 | 없음 |
+
+### B. 훅
+
+로그아웃 훅은 공통 셸 액션 상태와 로그아웃 요청 흐름을 관리한다.
+
+#### I. 훅 타입
+
+<a id="type-logout-state"></a>
+
+##### a. `LogoutState`
+
+```ts
+type LogoutState = {
+  actionError: string;
+  isLoading: boolean;
+};
+```
+
+<a id="type-logout-computed"></a>
+
+##### b. `LogoutComputed`
+
+```ts
+type LogoutComputed = {
+  sessionUser: SessionUser | null;
+};
+```
+
+<a id="type-logout-actions"></a>
+
+##### c. `LogoutActions`
+
+```ts
+type LogoutActions = {
+  logout: () => Promise<void>;
+};
+```
+
+<a id="type-use-logout-return"></a>
+
+##### d. `UseLogoutReturn`
+
+```ts
+type UseLogoutReturn = LogoutState & LogoutComputed & LogoutActions;
+```
+
+#### II. useLogout
+
+##### a. 훅 요약
 
 | 항목 | 내용 |
 | --- | --- |
-| 라우트 | 공통 (`(main)` 내부) |
-| 페이지 | 없음. `app/(main)` 내부 UI에서 호출 |
-| 주요 액션 | `logoutAction` |
-| 핵심 데이터 | 세션 정보, 현재 사용자 인증 상태, 로그아웃 호출 위치 |
-| 성공 후 | 세션 삭제 후 `/login`으로 이동 |
+| 훅명 | `useLogout()` |
+| 역할 | 로그아웃 UI 상태 관리, 로그아웃 요청 실행, 로그아웃 결과 상태 갱신 |
+| 호출 Service | `logoutService.logout()` |
+| 내부 참조값 | auth store 또는 session의 현재 `sessionUser` |
 
-## 유저 입장
+##### b. 상태
 
-### 유저 스토리
+| 변수 명 | 범위 | 초기 값 | 역할 |
+| --- | --- | --- | --- |
+| `actionError` | `public` | `""` | 로그아웃 결과 상태 관리 |
+| `isLoading` | `public` | `false` | 로그아웃 요청 실행 |
 
-> 나는 로그인된 상태에서 명확한 로그아웃 버튼을 누르고, 내 세션이 종료된 뒤 로그인 화면으로 이동하고 싶다.
+##### c. 참조값
 
-### 사용자가 보게 되는 것
+| 변수 명 | 출처 | 역할 |
+| --- | --- | --- |
+| `sessionUser` | `auth store 또는 session` | 현재 로그인 여부를 판단하고 로그아웃 버튼 노출 여부를 결정한다. |
 
-- 헤더 또는 프로필 메뉴 안 로그아웃 버튼
-- 클릭 가능한 단일 액션
-- 처리 중 비활성 상태
+##### d. 함수
 
-### 사용자 흐름
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 service | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `logout()` | `public` | 없음 | `Promise<void>` | <code>logoutService.logout(): Promise&lt;<a href="#type-logout-result">LogoutResult</a>&gt;</code> | `actionError`, `isLoading` |
 
-1. 로그인된 사용자가 메인 셸 안에서 로그아웃 버튼을 본다
-2. 로그아웃 버튼을 클릭한다
-3. 세션이 삭제된다
-4. `/login`으로 이동한다
-5. 이후 보호 라우트 접근 시 다시 로그인이 필요하다
+##### e. 동작 규칙
 
-### 유저 기준 핵심 규칙
+- `logout()`
+  - `sessionUser = null`이면 로그아웃 요청을 진행하지 않는다.
+  - 시작 시 `isLoading = true`, `actionError = ""`
+  - 실행 중 `logoutService.logout()`을 호출한다.
+  - 성공 시 전역 auth store 또는 session의 `sessionUser = null`로 갱신하고 `/login`으로 이동한다.
 
-- 로그아웃 버튼은 로그인된 상태에서만 보여야 한다.
-- 클릭 후 세션이 즉시 종료되어야 한다.
-- 로그아웃 후 보호 페이지에 다시 접근하면 로그인으로 보내야 한다.
-- 처리 중에는 중복 클릭이 되지 않아야 한다.
+##### f. 상태 갱신 규칙
 
-## 개발자 입장
-
-### 구조
-
-#### 라우트 구조
-
-```text
-app/
-  (main)/
-    layout.tsx
-    page.tsx
-    u/
-      [username]/
-        page.tsx
-```
-
-#### UI 구조
-
-```text
-features/
-  auth/
-    components/
-      logout-button.tsx
-
-components/
-  layout/
-    app-header.tsx
-    desktop-sidebar.tsx
-    bottom-nav.tsx
-```
-
-#### 액션 구조
-
-```text
-lib/actions/auth.ts
-  - logoutAction
-
-lib/session/index.ts
-  - clearAuthSession
-  - getAuthSession
-```
-
-#### 데이터 구조
-
-```text
-AuthSession
-  - userId
-  - email
-  - username
-  - displayName
-
-LogoutIntent
-  - source
-  - shouldRedirectToLogin
-```
-
-추가 규칙:
-
-- 로그아웃은 별도 페이지가 아니라 메인 셸 내부 액션으로 동작한다.
-- 세션이 없는 상태에서 로그아웃을 호출해도 안전하게 `/login`으로 보낼 수 있어야 한다.
-
-#### API 구조
-
-```text
-Server Action API
-
-logoutAction()
-  input:
-    - none
-  output:
-    - session cleared
-    - redirect to /login
-```
-
-- 로그아웃은 별도 REST endpoint보다 `Server Action`을 우선 사용한다.
-- 버튼 클릭은 `logoutAction`으로 직접 연결한다.
-- 성공 기준은 세션 쿠키 삭제와 `/login` 이동이다.
-
-#### 주요 상수와 함수
-
-```text
-constants
-  - AUTH_COOKIE_NAME
-  - LOGIN_ROUTE = "/login"
-
-functions
-  - clearAuthSession()
-  - getAuthSession()
-  - logoutAction()
-```
-
-- `AUTH_COOKIE_NAME`은 삭제 대상 인증 쿠키 이름을 고정한다.
-- `LOGIN_ROUTE`는 로그아웃 후 공통 이동 경로다.
-- `clearAuthSession`은 쿠키 기반 로그인 유지 정보를 제거한다.
-- `getAuthSession`은 버튼 노출 여부와 보호 라우트 판별에 사용한다.
-- `logoutAction`은 세션 삭제 후 `/login` redirect를 수행한다.
-
-### 담당 파일
-
-| 항목 | 파일 |
+| 상황 | 상태 갱신 |
 | --- | --- |
-| 메인 가드 레이아웃 | `app/(main)/layout.tsx` |
-| 로그아웃 버튼 | `features/auth/components/logout-button.tsx` |
-| 헤더 배치 | `components/layout/app-header.tsx` |
-| 데스크톱 메뉴 배치 | `components/layout/desktop-sidebar.tsx` |
-| 액션 | `lib/actions/auth.ts` |
-| 세션 helper | `lib/session/*` |
+| 성공 | `actionError = ""` |
+| 실패 | `actionError = message` |
+| 종료 | `isLoading = false` |
 
-### 로컬 상태
+### C. 서비스
 
-| 상태 | 설명 |
+로그아웃 서비스는 로그아웃 요청과 세션 종료 결과 반환만 담당한다.
+
+#### I. 서비스 타입
+
+<a id="type-logout-result"></a>
+
+##### a. `LogoutResult`
+
+```ts
+type LogoutResult =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+```
+
+#### II. `logoutService`
+
+##### a. 서비스 요약
+
+| 항목 | 내용 |
 | --- | --- |
-| `isPending` | 로그아웃 처리 중 여부 |
+| 서비스명 | `logoutService` |
+| 역할 | 로그아웃 비즈니스 흐름 수행, 레포지토리 호출, 최종 결과 반환 |
+| 호출 Repository | `authRepository.logout()` |
 
-상태가 아닌 값:
+##### b. 함수
 
-- `isAuthenticated`는 서버에서 `getAuthSession()` 결과로 판단한다.
-- `logoutVisible`은 로그인 상태와 현재 셸 위치에서 파생한다.
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 대상 | 실패 메시지 | 역할 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `logout()` | `public` | 없음 | <code>Promise&lt;<a href="#type-logout-result">LogoutResult</a>&gt;</code> | <code>authRepository.logout(): Promise&lt;<a href="#type-logout-api-response">LogoutApiResponse</a>&gt;</code> | `로그아웃 처리 중 문제가 발생했습니다.`<br>`서버 오류가 발생했습니다.`<br>`네트워크 오류가 발생했습니다. 다시 시도해주세요.` | 로그아웃 성공/실패 결과를 반환한다. |
 
-### 구현 규칙
+##### c. 동작 규칙
 
-- 로그아웃 UI는 `(main)` 셸 내부에서만 노출한다.
-- 로그아웃 버튼은 `features/auth/components/logout-button.tsx`에 둔다.
-- 헤더, 사이드바 같은 배치만 `components/layout`에서 담당한다.
-- 로그아웃은 `logoutAction -> clearAuthSession -> redirect('/login')` 흐름으로 처리한다.
-- 세션 삭제 로직은 UI에서 직접 구현하지 않고 `lib/session` helper를 사용한다.
-- 로그아웃 후 브라우저 뒤로가기로 보호 라우트가 보이더라도 서버 가드가 다시 로그인으로 보내야 한다.
+- `logout()`
+  - `authRepository.logout()`을 호출한다.
+  - 서버가 세션 삭제를 완료하면 로그아웃 성공 결과를 반환한다.
+  - 로그아웃 성공 시 훅 또는 컴포넌트에서 `/login`으로 이동한다.
 
-### 개발자 플로우
+##### d. 반환 규칙
 
-1. `app/(main)/layout.tsx`가 현재 세션을 확인한다.
-2. 로그인 상태면 헤더 또는 사이드바에 `logout-button.tsx`를 렌더링한다.
-3. 사용자가 버튼을 클릭하면 `logoutAction`을 호출한다.
-4. `logoutAction`이 `clearAuthSession()`으로 인증 쿠키를 삭제한다.
-5. 세션 삭제 후 `/login`으로 리다이렉트한다.
-6. 이후 보호 라우트 재진입 시 가드가 다시 세션 유무를 검사한다.
+- `logout()`
 
-### 예외 처리
+| 상황 | 반환값 |
+| --- | --- |
+| 로그아웃 성공 | `success: true` |
+| 로그아웃 실패 | `success: false`, `message: string` |
 
-- 이미 세션이 없는 상태에서 로그아웃 호출 시에도 안전하게 `/login`으로 이동
-- 처리 중 중복 클릭 차단
-- 세션 삭제 실패 시 로그인 화면으로 보내기 전에 에러 로그 기록 고려
-- 로그아웃 후 보호 라우트 접근 시 다시 로그인으로 보낸다
+### D. 레포지토리
 
-## 체크리스트
+레포지토리는 로그아웃 API 요청과 응답 처리만 담당한다.
 
-- [ ] 로그인된 상태에서만 로그아웃 버튼이 보인다
-- [ ] 로그아웃 버튼 클릭 시 `logoutAction`이 호출된다
-- [ ] `logoutAction`이 세션 쿠키를 삭제한다
-- [ ] 로그아웃 성공 시 `/login`으로 이동한다
-- [ ] 로그아웃 처리 중 중복 클릭이 차단된다
-- [ ] 로그아웃 후 보호 라우트 접근이 차단된다
+#### I. API 타입
+
+<a id="type-logout-api-response"></a>
+
+##### a. `LogoutApiResponse`
+
+```ts
+type LogoutApiResponse = LogoutResult;
+```
+
+#### II. `authRepository`
+
+##### a. 레포지토리 요약
+
+| 항목 | 내용 |
+| --- | --- |
+| 레포지토리명 | `authRepository` |
+| 역할 | API 요청 전송, 서버 응답 수신, 응답 데이터를 서비스 계층에 전달 |
+| 호출 API | `POST /api/auth/logout` |
+
+##### b. 함수
+
+| 함수 명 | 받는 props | return 값 | 호출하는 API | 역할 |
+| --- | --- | --- | --- | --- |
+| `logout()` | 없음 | <code>Promise&lt;<a href="#type-logout-api-response">LogoutApiResponse</a>&gt;</code> | `POST /api/auth/logout` | 로그아웃 API 요청 후 응답 결과를 반환한다. |
+
+##### c. 요청 규칙
+
+| 항목 | 내용 |
+| --- | --- |
+| Method | `POST` |
+| URL | `/api/auth/logout` |
+| 요청 본문 | 없음 |
+
+##### d. 동작 규칙
+
+- `logout()`
+  - `POST /api/auth/logout`으로 요청을 전송한다.
+  - 서버 응답을 <a href="#type-logout-api-response"><code>LogoutApiResponse</code></a> 형태로 반환한다.
+
+##### e. 반환 규칙
+
+| 상황 | 반환값 |
+| --- | --- |
+| 로그아웃 성공 | `success: true` |
+| 로그아웃 실패 | `success: false`, `message: string` |
+
+### E. 서버
+
+#### I. 로그아웃 API
+
+##### a. API 요약
+
+| 항목 | 내용 |
+| --- | --- |
+| API 이름 | 로그아웃 API |
+| Method | `POST` |
+| URL | `/api/auth/logout` |
+| 요청 본문 | 없음 |
+| 처리 | 현재 로그인 세션을 삭제하고 로그아웃 성공/실패 결과를 반환한다. |
+| Response | `success` 또는 `message` |
+
+##### b. 요청 본문 예시
+
+없음.
+
+##### c. 응답 예시
+
+###### 1. 성공 응답 예시
+
+```json
+{
+  "success": true
+}
+```
+
+###### 2. 실패 응답 예시
+
+```json
+{
+  "success": false,
+  "message": "로그아웃 처리 중 문제가 발생했습니다."
+}
+```
+
+###### 3. 서버 에러 응답 예시
+
+```json
+{
+  "success": false,
+  "message": "서버 오류가 발생했습니다."
+}
+```
+
+## 3. 디자인 참조
+
+로그아웃 기능의 상세 UI 규칙은 셸 레이아웃과 공통 버튼 규칙 문서를 참조한다.
+
+### A. 디자인 참조 문서
+
+| 구분 | 문서 | 역할 |
+| --- | --- | --- |
+| 전체 디자인 시스템 | [design-system.md](../../layout/design-system.md) | 토큰, 무드, 상태, 레이아웃 기준 |
+| 화면 조합 패턴 | [screen-patterns.md](../../layout/design-system/screen-patterns.md) | 메인 셸과 인증 전환 화면 패턴 기준 |
+| 공통 UI 컴포넌트 | [components-ui.md](../../layout/design-system/components-ui.md) | `Button`, 링크 버튼 등 공통 UI 기준 |
+| 공통 레이아웃 컴포넌트 | [components-layout.md](../../layout/design-system/components-layout.md) | `AppHeader`, `DesktopSidebar` 등 공통 셸 레이아웃 기준 |

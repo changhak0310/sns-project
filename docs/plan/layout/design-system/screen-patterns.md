@@ -16,28 +16,30 @@
 | --- | --- |
 | 구현 디렉터리 | `features/auth/components` |
 | 적용 화면 | `/login`, `/signup` |
-| 추가할 디자인 | 집중형 auth card, 짧은 브랜드 카피, 부드러운 설명 문구 |
+| 추가할 디자인 | 클린 소셜 auth card, 짧은 브랜드 카피, 빠르게 읽히는 설명 문구 |
 | 필요한 컴포넌트 | `AuthHeader`, `AuthCard`, `LoginForm`, `SignupForm`, `AuthSwitchLink`, `OAuthButton(optional)` |
 
 #### 인증 화면 상세 규칙
 
 | 구분 | 규칙 |
 | --- | --- |
-| 시각 방향 | 장식보다 대비와 여백 중심의 미니멀 auth 화면 |
+| 시각 방향 | 인스타그램처럼 가볍고 즉시 읽히는 auth 화면을 지향하되, 장식보다 대비와 여백 중심의 미니멀 구성을 유지한다 |
 | 무드 | 기본은 `focus`, 다크 화면은 `focus-dark` |
-| 배경 | 거의 검정에 가까운 단색 또는 약한 농도 차이의 dark surface |
+| 배경 | 기본은 화이트 또는 매우 옅은 그레이, 필요 시 은은한 radial tint를 허용하고 다크 화면은 거의 검정의 surface를 사용한다 |
 | 카드 위치 | 화면 정중앙 단일 카드 |
 | 카드 폭 | 모바일 `calc(100% - 32px)`, 최대 `420px` |
 | 카드 padding | 모바일 `24px`, 데스크톱 `32px` |
 | 정보 순서 | `제목 -> 설명 -> email -> password -> CTA -> 전환 링크` |
+| 카드 인상 | 화이트 surface, 얇은 보더, 낮은 그림자, 상단 브랜드 영역을 기본으로 한다 |
+| CTA 인상 | 기본 CTA는 또렷한 solid tone을 사용하고, 보조 강조만 accent tone 또는 약한 gradient를 허용한다 |
 | 확장 규칙 | 데스크톱에서도 2열로 나누지 않고 단일 카드 유지 |
 
 #### 인증 화면 상태 규칙
 
 | 상태 | 표현 방식 |
 | --- | --- |
-| 기본 | dark card + subtle border + muted placeholder |
-| focus | 입력 보더 강조 + 라이트 focus ring |
+| 기본 | clean card + subtle border + muted placeholder |
+| focus | 입력 보더 강조 + clean focus ring |
 | error | 필드 하단 에러 메시지 + 에러 보더 |
 | pending | CTA 비활성 + 로딩 텍스트 또는 스피너 |
 | disabled | 명도 낮춤 + 클릭 차단 |

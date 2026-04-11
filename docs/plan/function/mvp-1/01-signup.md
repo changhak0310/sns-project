@@ -1,236 +1,509 @@
-﻿# 기능 01 - 회원가입
+# 회원가입 명세
 
-## 개요
+## 1. 상태 변수 및 함수 정의
+
+회원가입 훅과 컴포넌트는 아래 변수와 함수를 공통 계약으로 사용한다.
+
+### A. 타입 정의
+
+#### I. 공통 타입
+
+<a id="type-user"></a>
+
+##### a. `User`
+
+```ts
+type User = {
+  id: number;
+  email: string;
+  name: string;
+  username: string;
+  avatarUrl: string;
+  accessToken: string;
+};
+```
+
+### B. 상태 변수 정의
+
+| 변수명 | 타입 | 설명 | 초기값 | 사용 컴포넌트 |
+| --- | --- | --- | --- | --- |
+| `username` | `string` | 사용자가 입력한 유저 이름 | `""` | `SignupForm`, `UsernameInputField` |
+| `email` | `string` | 사용자가 입력한 이메일 | `""` | `SignupForm`, `EmailInputField` |
+| `password` | `string` | 사용자가 입력한 비밀번호 | `""` | `SignupForm`, `PasswordInputField` |
+| `confirmPassword` | `string` | 사용자가 재입력한 비밀번호 | `""` | `SignupForm`, `ConfirmPasswordInputField` |
+| `usernameError` | `string` | 유저 이름 입력 필드의 실시간 검증 메시지 | `""` | `SignupForm`, `UsernameInputField` |
+| `emailError` | `string` | 이메일 입력 필드의 실시간 검증 메시지 | `""` | `SignupForm`, `EmailInputField` |
+| `passwordError` | `string` | 비밀번호 입력 필드의 실시간 검증 메시지 | `""` | `SignupForm`, `PasswordInputField` |
+| `confirmPasswordError` | `string` | 비밀번호 재입력 필드의 실시간 검증 메시지 | `""` | `SignupForm`, `ConfirmPasswordInputField` |
+| `formError` | `string` | 회원가입 요청 실패 시 폼 영역에 보여줄 메시지 | `""` | `SignupForm`, `SignupErrorMessage` |
+| `isFormValid` | `boolean` | 유저 이름, 이메일, 비밀번호, 재입력 비밀번호가 모두 유효한지 여부 | `false` | `SignupForm`, `SignupSubmitButton` |
+| `isLoading` | `boolean` | 회원가입 요청 진행 여부 | `false` | `SignupForm`, `SignupSubmitButton` |
+| `signupUser` | <a href="#type-user"><code>User</code></a> \| null | 회원가입 성공 후 저장할 사용자 정보, 값이 있으면 성공 상태로 판단한다 | `null` | `SignupForm` |
+
+### C. 함수 정의
+
+| 함수명 | 시그니처 | 역할 | 사용 컴포넌트 |
+| --- | --- | --- | --- |
+| `setUsername()` | `(value: string) => void` | 유저 이름 입력값을 변경하고 실시간 검증과 이전 회원가입 결과 상태 초기화를 실행한다. | `SignupForm`, `UsernameInputField` |
+| `setEmail()` | `(value: string) => void` | 이메일 입력값을 변경하고 실시간 검증과 이전 회원가입 결과 상태 초기화를 실행한다. | `SignupForm`, `EmailInputField` |
+| `setPassword()` | `(value: string) => void` | 비밀번호 입력값을 변경하고 실시간 검증과 이전 회원가입 결과 상태 초기화를 실행한다. | `SignupForm`, `PasswordInputField` |
+| `setConfirmPassword()` | `(value: string) => void` | 비밀번호 재입력 값을 변경하고 실시간 검증과 이전 회원가입 결과 상태 초기화를 실행한다. | `SignupForm`, `ConfirmPasswordInputField` |
+| `signup()` | `() => Promise<void>` | 폼이 유효할 때 회원가입 요청을 실행한다. | `SignupForm`, `SignupSubmitButton` |
+| `resetSignupState()` | `() => void` | 회원가입 상태와 검증 메시지를 초기값으로 되돌린다. | `SignupForm` |
+
+## 목차
+
+- `1. 상태 변수 및 함수 정의`
+  - `A. 타입 정의`
+  - `B. 상태 변수 정의`
+  - `C. 함수 정의`
+- `2. 데이터 흐름`
+  - `A. 컴포넌트`
+  - `B. 훅`
+  - `C. 서비스`
+  - `D. 레포지토리`
+  - `E. 서버`
+- `3. 디자인 참조`
+  - `A. 디자인 참조 문서`
+
+## 2. 데이터 흐름
+
+```text
+A. 컴포넌트 -> B. 훅 -> C. 서비스 -> D. 레포지토리 -> E. 서버
+```
+참조 - [function-md-guide.md](../function-md-guide.md), [layer.md](../../layout/layer.md)
+
+### A. 컴포넌트
+
+회원가입 화면 컴포넌트는 아래 구조로 고정한다.
+
+#### I. 컴포넌트 구조
+
+```text
+SignupPage
+  -> SignupForm
+    -> UsernameInputField
+    -> EmailInputField
+    -> PasswordInputField
+    -> ConfirmPasswordInputField
+    -> SignupSubmitButton
+    -> SignupErrorMessage
+```
+
+#### II. 컴포넌트 타입
+
+<a id="type-signup-field-props"></a>
+
+##### a. `SignupFieldProps`
+
+```ts
+type SignupFieldProps = {
+  value: string;
+  fieldErrorMessage?: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+};
+```
+
+<a id="type-signup-submit-button-props"></a>
+
+##### b. `SignupSubmitButtonProps`
+
+```ts
+type SignupSubmitButtonProps = {
+  isLoading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+};
+```
+
+<a id="type-signup-error-message-props"></a>
+
+##### c. `SignupErrorMessageProps`
+
+```ts
+type SignupErrorMessageProps = {
+  message: string;
+};
+```
+
+#### III. 컴포넌트 정의
+
+| 컴포넌트명 | 역할 | 사용하는 Hook | 받는 props | 이벤트에서 호출하는 함수 | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `SignupPage` | 회원가입 화면 진입 페이지 | 없음 | 없음 | 없음 | 없음 |
+| `SignupForm` | 회원가입 폼 조합과 제출 처리 | `useSignup()` | 없음 | `onSubmit -> signup()` | `username`, `email`, `password`, `confirmPassword`, `usernameError`, `emailError`, `passwordError`, `confirmPasswordError`, `formError`, `isFormValid`, `isLoading`, `signupUser` |
+| `UsernameInputField` | 유저 이름 입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-signup-field-props"><code>SignupFieldProps</code></a> | `onChange -> setUsername(value)` | `username`, `usernameError` |
+| `EmailInputField` | 이메일 입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-signup-field-props"><code>SignupFieldProps</code></a> | `onChange -> setEmail(value)` | `email`, `emailError` |
+| `PasswordInputField` | 비밀번호 입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-signup-field-props"><code>SignupFieldProps</code></a> | `onChange -> setPassword(value)` | `password`, `passwordError` |
+| `ConfirmPasswordInputField` | 비밀번호 재입력 필드와 실시간 에러 메시지 출력 | 없음 | <a href="#type-signup-field-props"><code>SignupFieldProps</code></a> | `onChange -> setConfirmPassword(value)` | `confirmPassword`, `confirmPasswordError` |
+| `SignupSubmitButton` | 회원가입 제출 버튼, `isFormValid = false` 또는 `isLoading = true`일 때 비활성화 | 없음 | <a href="#type-signup-submit-button-props"><code>SignupSubmitButtonProps</code></a> | `onClick -> signup()` | `isFormValid`, `isLoading` |
+| `SignupErrorMessage` | 회원가입 요청 실패 폼 메시지 출력 | 없음 | <a href="#type-signup-error-message-props"><code>SignupErrorMessageProps</code></a> | 없음 | `formError` |
+
+### B. 훅
+
+훅은 기능 단위로 나누어 정의한다.
+
+#### I. 훅 타입
+
+<a id="type-signup-state"></a>
+
+##### a. `SignupState`
+
+```ts
+type SignupState = {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  usernameError: string;
+  emailError: string;
+  passwordError: string;
+  confirmPasswordError: string;
+  formError: string;
+  isFormValid: boolean;
+  isLoading: boolean;
+  signupUser: User | null;
+};
+```
+
+<a id="type-signup-actions"></a>
+
+##### b. `SignupActions`
+
+```ts
+type SignupActions = {
+  setUsername: (value: string) => void;
+  setEmail: (value: string) => void;
+  setPassword: (value: string) => void;
+  setConfirmPassword: (value: string) => void;
+  signup: () => Promise<void>;
+  resetSignupState: () => void;
+};
+```
+
+<a id="type-use-signup-return"></a>
+
+##### c. `UseSignupReturn`
+
+```ts
+type UseSignupReturn = SignupState & SignupActions;
+```
+
+#### II. useSignup
+
+##### a. 훅 요약
 
 | 항목 | 내용 |
 | --- | --- |
-| 라우트 | `/signup` |
-| 페이지 | `app/(auth)/signup/page.tsx` |
-| 주요 액션 | `signupAction` |
-| 핵심 데이터 | 사용자 정보, 비밀번호 hash, 세션 정보, 안전한 redirect 정보 |
-| 성공 후 | 회원가입 성공 시 자동 로그인 후 `/` 또는 검증된 `redirectTo`로 이동 |
+| 훅명 | `useSignup()` |
+| 역할 | 회원가입 UI 상태 관리, 입력값 실시간 검증, 회원가입 버튼 활성화 상태 관리, 회원가입 요청 실행, 회원가입 결과 상태 관리, 회원가입 사용자 정보 관리, 회원가입 상태 초기화 |
+| 호출 Service | `signupService.validateUsername(username)`, `signupService.validateEmail(email)`, `signupService.validatePassword(password)`, `signupService.validateConfirmPassword(password, confirmPassword)`, `signupService.signup(username, email, password, confirmPassword)` |
+| 자동 로그인 상태 저장 위치 | `signup()` 성공 후 전역 auth store 또는 session |
 
-## 유저 입장
+##### b. 상태
 
-### 유저 스토리
+| 변수 명 | 범위 | 초기 값 | 역할 |
+| --- | --- | --- | --- |
+| `username` | `public` | `""` | 회원가입 UI 상태 관리 |
+| `email` | `public` | `""` | 회원가입 UI 상태 관리 |
+| `password` | `public` | `""` | 회원가입 UI 상태 관리 |
+| `confirmPassword` | `public` | `""` | 회원가입 UI 상태 관리 |
+| `usernameError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `emailError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `passwordError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `confirmPasswordError` | `public` | `""` | 입력 필드 에러 상태 관리 |
+| `formError` | `public` | `""` | 회원가입 결과 상태 관리 |
+| `isFormValid` | `public` | `false` | 회원가입 버튼 활성화 상태 관리 |
+| `isLoading` | `public` | `false` | 회원가입 요청 실행 |
+| `signupUser` | `public` | `null` | 회원가입 사용자 정보 관리 |
 
-> 나는 계정을 만들고 바로 로그인된 상태로 서비스를 시작하고 싶다.
+##### c. 함수
 
-### 사용자가 보게 되는 것
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 service | 관리하는 state |
+| --- | --- | --- | --- | --- | --- |
+| `setUsername()` | `public` | `value: string` | `void` | <code>signupService.validateUsername(value: string): boolean</code> | `username`, `usernameError`, `formError`, `isFormValid`, `signupUser` |
+| `setEmail()` | `public` | `value: string` | `void` | <code>signupService.validateEmail(value: string): boolean</code> | `email`, `emailError`, `formError`, `isFormValid`, `signupUser` |
+| `setPassword()` | `public` | `value: string` | `void` | <code>signupService.validatePassword(value: string): boolean</code><br><code>signupService.validateConfirmPassword(password: string, confirmPassword: string): boolean</code> | `password`, `passwordError`, `confirmPasswordError`, `formError`, `isFormValid`, `signupUser` |
+| `setConfirmPassword()` | `public` | `value: string` | `void` | <code>signupService.validateConfirmPassword(password: string, value: string): boolean</code> | `confirmPassword`, `confirmPasswordError`, `formError`, `isFormValid`, `signupUser` |
+| `signup()` | `public` | 없음 | `Promise<void>` | <code>signupService.signup(username: string, email: string, password: string, confirmPassword: string): Promise&lt;<a href="#type-signup-result">SignupResult</a>&gt;</code> | `isLoading`, `formError`, `signupUser` |
+| `resetSignupState()` | `public` | 없음 | `void` | 없음 | `username`, `email`, `password`, `confirmPassword`, `usernameError`, `emailError`, `passwordError`, `confirmPasswordError`, `formError`, `isFormValid`, `isLoading`, `signupUser` |
 
-- 회원가입 폼
-- 이름, 이메일, 비밀번호 입력 필드
-- 입력 에러 메시지
-- 제출 버튼
-- 로그인 화면 전환 링크
+##### d. 동작 규칙
 
-### 사용자 흐름
+- `setUsername()`
+  - `username` 값을 갱신한다.
+  - `signupService.validateUsername(value)`를 호출해 `usernameError`를 갱신한다.
+  - 이전 회원가입 결과 상태를 초기화하기 위해 `formError = ""`, `signupUser = null`로 갱신한다.
+  - 모든 입력값이 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `setEmail()`
+  - `email` 값을 갱신한다.
+  - `signupService.validateEmail(value)`를 호출해 `emailError`를 갱신한다.
+  - 이전 회원가입 결과 상태를 초기화하기 위해 `formError = ""`, `signupUser = null`로 갱신한다.
+  - 모든 입력값이 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `setPassword()`
+  - `password` 값을 갱신한다.
+  - `signupService.validatePassword(value)`를 호출해 `passwordError`를 갱신한다.
+  - `signupService.validateConfirmPassword(value, confirmPassword)`를 호출해 `confirmPasswordError`를 갱신한다.
+  - 이전 회원가입 결과 상태를 초기화하기 위해 `formError = ""`, `signupUser = null`로 갱신한다.
+  - 모든 입력값이 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `setConfirmPassword()`
+  - `confirmPassword` 값을 갱신한다.
+  - `signupService.validateConfirmPassword(password, value)`를 호출해 `confirmPasswordError`를 갱신한다.
+  - 이전 회원가입 결과 상태를 초기화하기 위해 `formError = ""`, `signupUser = null`로 갱신한다.
+  - 모든 입력값이 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
+- `signup()`
+  - `isFormValid = false`이면 회원가입 요청을 진행하지 않는다.
+  - 시작 시 `isLoading = true`, `formError = ""`, `signupUser = null`
+  - 실행 중 `signupService.signup(username, email, password, confirmPassword)`를 호출한다.
+  - 성공 시 `signupUser = data`로 갱신하고 전역 auth store 또는 session에 사용자 정보를 저장한다.
+- `resetSignupState()`
+  - 회원가입 상태와 검증 메시지를 모두 초기값으로 되돌린다.
 
-1. 비회원 사용자가 `/signup`에 진입
-2. 이름, 이메일, 비밀번호를 입력한다
-3. 제출 시 입력값 검증과 이메일 중복 검사를 수행한다
-4. 성공 시 계정이 생성되고 자동 로그인된다
-5. `/` 또는 원래 가려던 내부 경로로 이동한다
-6. 실패 시 입력값은 유지되고 에러가 노출된다
+##### e. 상태 갱신 규칙
 
-### 유저 기준 핵심 규칙
-
-- 회원가입은 실제 입력값 검증이 있어야 한다.
-- 실패해도 입력값이 사라지지 않아야 한다.
-- 회원가입 성공 직후 다시 로그인할 필요가 없어야 한다.
-- 이미 로그인된 사용자는 `/signup`에 머물지 않아야 한다.
-
-## 개발자 입장
-
-### 구조
-
-#### 라우트 구조
-
-```text
-app/
-  (auth)/
-    signup/
-      page.tsx
-  (main)/
-    layout.tsx
-```
-
-#### UI 구조
-
-```text
-features/
-  auth/
-    components/
-      auth-header.tsx
-      signup-form.tsx
-      auth-switch-link.tsx
-
-components/
-  ui/
-    button.tsx
-    input.tsx
-```
-
-#### 액션 구조
-
-```text
-lib/actions/auth.ts
-  - signupAction
-```
-
-#### 데이터 구조
-
-```text
-SignupInput
-  - name
-  - email
-  - password
-
-User
-  - id
-  - email
-  - passwordHash
-  - displayName
-  - username
-  - avatarUrl
-
-AuthSession
-  - userId
-  - email
-  - username
-  - displayName
-```
-
-추가 규칙:
-
-- 회원가입 폼의 `name`은 저장 시 `displayName`으로 매핑한다.
-- `username`은 회원가입 시 자동 생성하며, 중복되지 않도록 보정한다.
-- 세션에는 `passwordHash`를 절대 포함하지 않는다.
-
-#### API 구조
-
-```text
-Server Action API
-
-signupAction(formData)
-  input:
-    - name
-    - email
-    - password
-    - redirect (optional)
-  output:
-    - success
-    - fieldErrors
-    - formError
-    - redirectTo
-```
-
-- 1차 회원가입은 별도 REST endpoint보다 `Server Action`을 우선 사용한다.
-- 브라우저 폼 제출은 `signupAction`으로 직접 연결한다.
-- 필드 단위 오류는 `fieldErrors`, 공통 실패는 `formError`로 구분한다.
-- 성공 시 사용자 생성 후 세션 저장과 redirect를 같은 흐름에서 처리한다.
-
-#### 주요 상수와 함수
-
-```text
-constants
-  - AUTH_COOKIE_NAME
-  - AUTH_REDIRECT_QUERY_KEY = "redirect"
-  - AUTH_DEFAULT_REDIRECT = "/"
-  - PASSWORD_MIN_LENGTH = 8
-  - USERNAME_SUFFIX_START = 1
-
-functions
-  - normalizeEmail(email)
-  - validateRedirect(value)
-  - hashPassword(password)
-  - generateBaseUsername(name, email)
-  - ensureUniqueUsername(baseUsername)
-  - createAuthSession(user)
-  - getAuthSession()
-```
-
-- `AUTH_COOKIE_NAME`은 인증 쿠키 이름을 하나로 고정하는 기준값이다.
-- `AUTH_REDIRECT_QUERY_KEY`는 URL query 키를 문서와 구현에서 동일하게 유지하기 위한 상수다.
-- `AUTH_DEFAULT_REDIRECT`는 잘못된 redirect 입력이나 빈 값일 때의 fallback 경로다.
-- `normalizeEmail`은 trim, lowercase 처리 후 비교와 저장에 사용한다.
-- `validateRedirect`는 내부 경로만 허용하고 외부 URL, protocol 포함 값, `//` 경로를 차단한다.
-- `hashPassword`는 비밀번호 저장 전 hash 생성 책임을 가진다.
-- `generateBaseUsername`, `ensureUniqueUsername`는 username 생성 책임을 분리한다.
-- `createAuthSession`, `getAuthSession`은 쿠키 기반 로그인 유지 정보를 다룬다.
-
-### 담당 파일
-
-| 항목 | 파일 |
+| 상황 | 상태 갱신 |
 | --- | --- |
-| 회원가입 페이지 | `app/(auth)/signup/page.tsx` |
-| 인증 feature UI | `features/auth/components/signup-form.tsx` |
-| 공통 입력 UI | `components/ui/*` |
-| 액션 | `lib/actions/auth.ts` |
-| 세션 helper | `lib/session/*` |
-| validator | `lib/validators/auth.ts` |
-| repository | `lib/social-repository/*` |
-| 가드 | `app/(main)/layout.tsx` |
+| 유저 이름 입력 변경 | `username`, `usernameError`, `formError = ""`, `isFormValid`, `signupUser = null` |
+| 이메일 입력 변경 | `email`, `emailError`, `formError = ""`, `isFormValid`, `signupUser = null` |
+| 비밀번호 입력 변경 | `password`, `passwordError`, `confirmPasswordError`, `formError = ""`, `isFormValid`, `signupUser = null` |
+| 비밀번호 재입력 변경 | `confirmPassword`, `confirmPasswordError`, `formError = ""`, `isFormValid`, `signupUser = null` |
+| 성공 | `signupUser = data`, `formError = ""` |
+| 실패 | `signupUser = null`, `formError = message` |
+| 종료 | `isLoading = false` |
+| 초기화 | `username = ""`, `email = ""`, `password = ""`, `confirmPassword = ""`, `usernameError = ""`, `emailError = ""`, `passwordError = ""`, `confirmPasswordError = ""`, `formError = ""`, `isFormValid = false`, `isLoading = false`, `signupUser = null` |
 
-### 로컬 상태
+### C. 서비스
 
-| 상태 | 설명 |
+서비스는 기능 단위로 나누어 정의한다.
+
+#### I. 서비스 타입
+
+<a id="type-signup-result"></a>
+
+##### a. `SignupResult`
+
+```ts
+type SignupResult =
+  | {
+      success: true;
+      data: User;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+```
+
+#### II. `signupService`
+
+##### a. 서비스 요약
+
+| 항목 | 내용 |
 | --- | --- |
-| `name` | 회원가입 이름 입력값 |
-| `email` | 이메일 입력값 |
-| `password` | 비밀번호 입력값 |
-| `isSubmitting` | 제출 중 여부 |
-| `submitError` | 실패 메시지 |
-| `redirectTo` | `redirect` query를 검증한 안전한 내부 이동 경로 |
+| 서비스명 | `signupService` |
+| 역할 | 입력값 검증, 회원가입 비즈니스 로직 수행, 레포지토리 호출, 회원가입 성공 후 자동 로그인에 필요한 사용자 정보 반환 |
+| 호출 Repository | `authRepository.signup(username, email, password)` |
 
-### 구현 규칙
+##### b. 함수
 
-- 회원가입은 이메일/비밀번호 기반으로 구현한다.
-- 회원가입 성공 시 자동 로그인한다.
-- 이메일 중복은 대소문자 구분 없이 검사한다.
-- 사용자 생성은 `lib/social-repository`를 통해 수행한다.
-- URL query 이름은 `redirect`로 통일한다.
-- 내부 검증이 끝난 이동 경로 이름은 `redirectTo`로 통일한다.
-- `redirectTo`는 `/`로 시작하는 내부 경로만 허용한다.
-- 성공 시 세션 쿠키를 저장한다.
+| 함수 명 | 범위 | 받는 props | return 값 | 호출하는 대상 | 실패 메시지 | 역할 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `signup()` | `public` | `username: string`, `email: string`, `password: string`, `confirmPassword: string` | <code>Promise&lt;<a href="#type-signup-result">SignupResult</a>&gt;</code> | <code>authRepository.signup(username: string, email: string, password: string): Promise&lt;<a href="#type-signup-api-response">SignupApiResponse</a>&gt;</code> | `이미 사용 중인 유저 이름입니다.`<br>`이미 사용 중인 이메일입니다.`<br>`서버 오류가 발생했습니다.`<br>`네트워크 오류가 발생했습니다. 다시 시도해주세요.` | 회원가입 성공/실패 결과를 반환하고 성공 시 자동 로그인에 사용할 사용자 정보를 전달한다. |
+| `validateUsername()` | `public` | `username: string` | `boolean` | 없음 | `유저 이름을 입력해주세요`<br>`유저 이름은 16자 이내여야 합니다.`<br>`유저 이름에 띄어쓰기를 사용할 수 없습니다.`<br>`사용할 수 없는 유저 이름입니다.` | 유저 이름 형식을 검증한다. |
+| `validateEmail()` | `public` | `email: string` | `boolean` | 없음 | `이메일 형식과 맞지 않음` | 이메일 형식을 검증한다. |
+| `validatePassword()` | `public` | `password: string` | `boolean` | 없음 | `비밀번호를 입력해주세요` | 비밀번호 입력 여부를 검증한다. |
+| `validateConfirmPassword()` | `public` | `password: string`, `confirmPassword: string` | `boolean` | 없음 | `비밀번호를 다시 입력해주세요`<br>`비밀번호가 일치하지 않습니다.` | 비밀번호 재입력 여부와 비밀번호 일치 여부를 검증한다. |
 
-### username 생성 규칙
+##### c. 동작 규칙
 
-- 기본 후보는 `name`을 우선 사용하고, 비어 있거나 부적절하면 이메일의 local part를 사용한다.
-- lowercase 기준으로 생성한다.
-- 허용 문자는 영문 소문자, 숫자, `_`만 사용한다.
-- 중복 시 숫자 suffix를 붙여 유니크하게 만든다.
+- `signup()`
+  - 시작 시 `validateUsername(username)`를 호출한다.
+  - 다음으로 `validateEmail(email)`를 호출한다.
+  - 다음으로 `validatePassword(password)`를 호출한다.
+  - 다음으로 `validateConfirmPassword(password, confirmPassword)`를 호출한다.
+  - 네 검증이 모두 통과하면 `authRepository.signup(username, email, password)`를 호출한다.
+  - 회원가입 성공 시 서버가 반환한 사용자 데이터를 기준으로 훅이 전역 auth store 또는 session에 자동 로그인 상태를 저장할 수 있도록 전달한다.
+- `validateUsername()`
+  - 유저 이름 값이 비어 있는지 확인한다.
+  - 유저 이름은 16자 이내여야 한다.
+  - 유저 이름에 띄어쓰기를 포함할 수 없다.
+  - `undefined`, `null`과 같은 예약어는 사용할 수 없다.
+- `validateEmail()`
+  - 정규식은 `const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;`
+    - 이메일은 `@`를 포함해야 한다.
+    - 도메인 형식을 만족해야 한다.
+    - 공백은 허용하지 않는다.
+- `validatePassword()`
+  - 비밀번호 값이 비어 있는지 확인한다.
+- `validateConfirmPassword()`
+  - 재입력 비밀번호 값이 비어 있는지 확인한다.
+  - 비밀번호와 재입력 비밀번호가 일치하는지 확인한다.
 
-### 개발자 플로우
+##### d. 반환 규칙
 
-1. `app/(auth)/signup/page.tsx`에서 세션과 `searchParams.redirect`를 확인한다.
-2. `redirect`를 검증해서 내부 값 `redirectTo`를 만든다.
-3. 이미 로그인 상태면 즉시 `redirectTo` 또는 `/`로 보낸다.
-4. 비로그인 상태면 회원가입 폼을 렌더링한다.
-5. `signupAction`이 이름, 이메일, 비밀번호를 검증한다.
-6. `signupAction`은 이메일 normalize, 중복 검사, `username` 생성, 비밀번호 hash 저장, 사용자 생성을 처리한다.
-7. 회원가입 성공 시 세션 쿠키를 저장하고 `redirectTo` 또는 `/`로 리다이렉트한다.
-8. `app/(main)/layout.tsx`는 보호 라우트 진입 시 세션이 없으면 `/login?redirect=...`로 보낸다.
+- `signup()`
 
-### 예외 처리
+| 상황 | 반환값 |
+| --- | --- |
+| 회원가입 성공 | `success: true`, <code>data: <a href="#type-user">User</a></code> |
+| 회원가입 실패 | `success: false`, `message: string` |
 
-- 공백 입력은 제출 불가
-- 제출 중에는 중복 클릭 차단
-- 회원가입 실패 시 입력값 유지
-- 중복 이메일은 에러 반환
-- 잘못된 `redirect`는 `/`로 fallback
-- 이미 로그인 상태에서 `/signup`에 진입하면 즉시 이동
-- `username` 충돌 시 suffix를 붙여 자동 보정
+- `validateUsername()`
 
-## 체크리스트
+| 상황 | 반환값 |
+| --- | --- |
+| 유저 이름 누락 | `false` |
+| 유저 이름 길이 초과 | `false` |
+| 유저 이름 공백 포함 | `false` |
+| 사용할 수 없는 유저 이름 | `false` |
+| 유저 이름 형식 일치 | `true` |
 
-- [ ] `/signup` 페이지가 렌더링된다
-- [ ] 회원가입 폼에 이름, 이메일, 비밀번호 입력이 있다
-- [ ] 잘못된 입력 시 에러 메시지가 보인다
-- [ ] 이메일은 normalize 후 비교되며 중복 검사가 대소문자 구분 없이 동작한다
-- [ ] `signupAction`이 새 사용자를 생성하고 세션 쿠키를 생성한다
-- [ ] `signupAction`이 유니크한 `username`을 자동 생성한다
-- [ ] 회원가입 성공 시 `redirect` query가 있으면 검증 후 해당 경로로 이동한다
-- [ ] 잘못된 `redirect`는 `/`로 이동한다
-- [ ] 이미 로그인 상태에서 `/signup` 접근 시 홈 또는 목적지로 이동한다
-- [ ] 실패 시 입력값이 유지된다
+- `validateEmail()`
+
+| 상황 | 반환값 |
+| --- | --- |
+| 이메일 형식 불일치 | `false` |
+| 이메일 형식 일치 | `true` |
+
+- `validatePassword()`
+
+| 상황 | 반환값 |
+| --- | --- |
+| 비밀번호 누락 | `false` |
+| 비밀번호 값 존재 | `true` |
+
+- `validateConfirmPassword()`
+
+| 상황 | 반환값 |
+| --- | --- |
+| 재입력 비밀번호 누락 | `false` |
+| 비밀번호 불일치 | `false` |
+| 비밀번호 일치 | `true` |
+
+### D. 레포지토리
+
+레포지토리는 기능 단위로 나누어 정의한다.
+
+#### I. API 타입
+
+<a id="type-signup-api-response"></a>
+
+##### a. `SignupApiResponse`
+
+```ts
+type SignupApiResponse = SignupResult;
+```
+
+#### II. `authRepository`
+
+##### a. 레포지토리 요약
+
+| 항목 | 내용 |
+| --- | --- |
+| 레포지토리명 | `authRepository` |
+| 역할 | API 요청 전송, 서버 응답 수신, 응답 데이터를 서비스 계층에 전달 |
+| 호출 API | `POST /api/auth/signup` |
+
+##### b. 함수
+
+| 함수 명 | 받는 props | return 값 | 호출하는 API | 역할 |
+| --- | --- | --- | --- | --- |
+| `signup()` | `username: string`, `email: string`, `password: string` | <code>Promise&lt;<a href="#type-signup-api-response">SignupApiResponse</a>&gt;</code> | `POST /api/auth/signup` | 회원가입 API 요청 후 응답 결과를 반환한다. |
+
+##### c. 요청 규칙
+
+| 항목 | 내용 |
+| --- | --- |
+| Method | `POST` |
+| URL | `/api/auth/signup` |
+| 요청 본문 | `username`, `email`, `password` |
+
+##### d. 동작 규칙
+
+- `signup()`
+  - `username`, `email`, `password`를 요청 바디에 담는다.
+  - `POST /api/auth/signup`으로 요청을 전송한다.
+  - 서버 응답을 <a href="#type-signup-api-response"><code>SignupApiResponse</code></a> 형태로 반환한다.
+
+##### e. 반환 규칙
+
+| 상황 | 반환값 |
+| --- | --- |
+| 회원가입 성공 | `success: true`, <code>data: <a href="#type-user">User</a></code> |
+| 회원가입 실패 | `success: false`, `message: string` |
+
+### E. 서버
+
+#### I. 회원가입 API
+
+##### a. API 요약
+
+| 항목 | 내용 |
+| --- | --- |
+| API 이름 | 회원가입 API |
+| Method | `POST` |
+| URL | `/api/auth/signup` |
+| 요청 본문 | `username`, `email`, `password` |
+| 처리 | 유저 이름, 이메일, 비밀번호를 검증하고 유저 이름 및 이메일 중복 여부를 확인한 뒤 성공 시 자동 로그인에 사용할 사용자 정보와 토큰을 반환한다. |
+| Response | `success`, `data` 또는 `message` |
+
+##### b. 요청 본문 예시
+
+```json
+{
+  "username": "honggildong",
+  "email": "user@example.com",
+  "password": "1234"
+}
+```
+
+##### c. 응답 예시
+
+###### 1. 성공 응답 예시
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "홍길동",
+    "username": "honggildong",
+    "avatarUrl": "https://example.com/avatar.png",
+    "accessToken": "jwt-token"
+  }
+}
+```
+
+###### 2. 실패 응답 예시
+
+```json
+{
+  "success": false,
+  "message": "이미 사용 중인 이메일입니다."
+}
+```
+
+###### 3. 서버 에러 응답 예시
+
+```json
+{
+  "success": false,
+  "message": "서버 오류가 발생했습니다."
+}
+```
+
+## 3. 디자인 참조
+
+회원가입 기능의 상세 디자인 명세는 `docs/plan/layout/design-system` 아래 문서에서 관리하고, 이 문서에서는 참조만 연결한다.
+
+### A. 디자인 참조 문서
+
+| 구분 | 문서 | 역할 |
+| --- | --- | --- |
+| 전체 디자인 시스템 | [design-system.md](../../layout/design-system.md) | 토큰, 무드, 상태, 레이아웃 기준 |
+| 화면 조합 패턴 | [screen-patterns.md](../../layout/design-system/screen-patterns.md) | 인증 화면 공통 패턴 기준 |
+| 공통 UI 컴포넌트 | [components-ui.md](../../layout/design-system/components-ui.md) | `Input`, `Button` 등 공통 UI 기준 |
+| 공통 레이아웃 컴포넌트 | [components-layout.md](../../layout/design-system/components-layout.md) | 인증 화면 레이아웃 기준 |
+| 인증 화면 레퍼런스 | [auth-login.md](../../layout/design-system/auth-login.md) | 인증 화면 상태 표현과 공통 구조 기준 |

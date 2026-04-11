@@ -187,8 +187,8 @@ type UseLoginReturn = LoginState & LoginActions;
 
 | 함수 명 | 범위 | 받는 props | return 값 | 호출하는 service | 관리하는 state |
 | --- | --- | --- | --- | --- | --- |
-| `setEmail()` | `public` | `value: string` | `void` | <code>loginService.validateEmail(value: string): boolean</code> | `email`, `emailError`, `formError`, `isFormValid`, `loginUser` |
-| `setPassword()` | `public` | `value: string` | `void` | <code>loginService.validatePassword(value: string): boolean</code> | `password`, `passwordError`, `formError`, `isFormValid`, `loginUser` |
+| `setEmail()` | `public` | `value: string` | `void` | <code>loginService.validateEmail(email: string): boolean</code> | `email`, `emailError`, `formError`, `isFormValid`, `loginUser` |
+| `setPassword()` | `public` | `value: string` | `void` | <code>loginService.validatePassword(password: string): boolean</code> | `password`, `passwordError`, `formError`, `isFormValid`, `loginUser` |
 | `login()` | `public` | 없음 | `Promise<void>` | <code>loginService.login(email: string, password: string): Promise&lt;<a href="#type-login-result">LoginResult</a>&gt;</code> | `isLoading`, `formError`, `loginUser` |
 | `resetLoginState()` | `public` | 없음 | `void` | 없음 | `email`, `password`, `emailError`, `passwordError`, `formError`, `isFormValid`, `isLoading`, `loginUser` |
 
@@ -196,12 +196,12 @@ type UseLoginReturn = LoginState & LoginActions;
 
 - `setEmail()`
   - `email` 값을 갱신한다.
-  - `loginService.validateEmail(value)`를 호출해 `emailError`를 갱신한다.
+  - `loginService.validateEmail(email)`를 호출해 `emailError`를 갱신한다.
   - 이전 로그인 결과 상태를 초기화하기 위해 `formError = ""`, `loginUser = null`로 갱신한다.
   - `email`과 `password`가 모두 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
 - `setPassword()`
   - `password` 값을 갱신한다.
-  - `loginService.validatePassword(value)`를 호출해 `passwordError`를 갱신한다.
+  - `loginService.validatePassword(password)`를 호출해 `passwordError`를 갱신한다.
   - 이전 로그인 결과 상태를 초기화하기 위해 `formError = ""`, `loginUser = null`로 갱신한다.
   - `email`과 `password`가 모두 유효하면 `isFormValid = true`, 아니면 `false`로 유지한다.
 - `login()`
