@@ -2,18 +2,18 @@ import { Mail } from "lucide-react";
 
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import type { SignupFieldProps } from "@/types/auth";
+import type { AuthFieldProps } from "@/types/auth";
 
 export function EmailInputField({
   value,
   fieldErrorMessage,
   disabled = false,
   onChange,
-}: SignupFieldProps) {
+}: AuthFieldProps) {
   return (
-    <FormField label="이메일" htmlFor="signup-email" required>
+    <FormField label="이메일" htmlFor="auth-email" required>
       <Input
-        id="signup-email"
+        id="auth-email"
         type="email"
         value={value}
         placeholder="name@company.com"
