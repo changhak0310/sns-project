@@ -1,6 +1,6 @@
 import { DesignSystemShowcase } from "@/features/design-system/components/design-system-showcase";
 
-export default function Home() {
+export default function DesignSystemPage() {
   return (
     <main className="min-h-screen bg-background">
       <DesignSystemShowcase />
