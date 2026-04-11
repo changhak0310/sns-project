@@ -12,9 +12,14 @@ export function DesktopSidebar({
   navItems,
   activeHref,
   collapsed,
+  sessionUser,
+  accountActionArea,
   onToggleCollapse,
 }: DesktopSidebarProps) {
   const activeIndex = navItems.findIndex((item) => item.href === activeHref);
+  const avatarFallback = sessionUser
+    ? sessionUser.username.slice(0, 2).toUpperCase()
+    : "GU";
 
   return (
     <aside
@@ -92,28 +97,38 @@ export function DesktopSidebar({
             <div className="rounded-[24px] bg-[var(--ds-color-neutral-0)] p-4">
               <div className="flex items-center gap-3">
                 <Avatar
-                  alt="Preview User"
-                  fallback="PU"
+                  alt={sessionUser?.name ?? "Guest"}
+                  fallback={avatarFallback}
                   ring
                   size="sm"
-                  status="online"
+                  status={sessionUser ? "online" : undefined}
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[var(--ds-color-primary-900)]">
-                    @preview-user
+                    {sessionUser ? `@${sessionUser.username}` : "로그인이 필요합니다"}
                   </p>
                   <p className="text-xs text-[var(--ds-color-neutral-500)]">
-                    shell preview account
+                    {sessionUser ? sessionUser.email : "공통 셸 액션이 이 영역에 고정됩니다."}
                   </p>
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-[var(--ds-color-neutral-600)]">
-                공통 기반 단계에서는 셸 배치와 경로 인식을 먼저 고정합니다.
+                {sessionUser
+                  ? `${sessionUser.name} 계정으로 셸 배치와 인증 액션 흐름을 함께 확인합니다.`
+                  : "로그인 버튼과 로그아웃 액션은 세션 상태에 따라 이 영역에서 전환됩니다."}
               </p>
+              {accountActionArea ? (
+                <div className="mt-4">{accountActionArea}</div>
+              ) : null}
             </div>
           ) : (
             <div className="flex justify-center">
-              <Avatar alt="Preview User" fallback="PU" size="sm" ring />
+              <Avatar
+                alt={sessionUser?.name ?? "Guest"}
+                fallback={avatarFallback}
+                size="sm"
+                ring
+              />
             </div>
           )}
         </div>

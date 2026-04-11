@@ -93,3 +93,57 @@ export type LoginActions = {
 };
 
 export type UseLoginReturn = LoginState & LoginActions;
+
+export type SessionUser = {
+  id: number;
+  email: string;
+  username: string;
+  name: string;
+  avatarUrl?: string;
+};
+
+export type AuthActionAreaProps = {
+  loginHref: string;
+  profileHref: string;
+};
+
+export type AuthLinkButtonProps = {
+  href: string;
+  label: string;
+};
+
+export type LogoutButtonProps = {
+  isLoading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+};
+
+export type LogoutErrorMessageProps = {
+  message: string;
+};
+
+export type LogoutResult =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
+export type LogoutApiResponse = LogoutResult;
+
+export type LogoutState = {
+  actionError: string;
+  isLoading: boolean;
+};
+
+export type LogoutComputed = {
+  sessionUser: SessionUser | null;
+};
+
+export type LogoutActions = {
+  logout: () => Promise<void>;
+};
+
+export type UseLogoutReturn = LogoutState & LogoutComputed & LogoutActions;
