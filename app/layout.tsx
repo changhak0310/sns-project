@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, Geist, JetBrains_Mono } from "next/font/google";
+
+import { SessionProvider } from "@/lib/session/session-provider";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -37,7 +40,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${jetBrainsMono.variable} ${dmSerifDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

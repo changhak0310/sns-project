@@ -3,12 +3,14 @@
 import { useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 
+import { useSession } from "@/lib/session/session-provider";
 import type { UseAppShellReturn } from "@/types/app-shell";
 
 import { shellService } from "../services/shell-service";
 
 export function useAppShell(): UseAppShellReturn {
   const pathname = usePathname() ?? "/";
+  const { sessionUser } = useSession();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] =
     useState(false);
@@ -34,7 +36,7 @@ export function useAppShell(): UseAppShellReturn {
     setIsDesktopSidebarCollapsed(false);
   }, []);
 
-  const username = "preview-user";
+  const username = sessionUser?.username;
   const layoutConfig = shellService.getShellLayoutConfig(pathname);
   const navItems = shellService.getNavItems(username);
   const activeHref = shellService.getActiveNavHref(pathname, navItems);

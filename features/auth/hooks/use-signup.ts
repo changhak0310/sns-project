@@ -1,14 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { useSession } from "@/lib/session/session-provider";
 import {
   getConfirmPasswordValidationMessage,
   getEmailValidationMessage,
   getPasswordValidationMessage,
   getUsernameValidationMessage,
 } from "@/lib/validators/auth";
-import type { SignupState, UseSignupReturn } from "@/types/auth";
+import type {
+  SessionUser,
+  SignupState,
+  UseSignupReturn,
+  User,
+} from "@/types/auth";
 
 import { signupService } from "../services/signup-service";
 
@@ -60,8 +66,23 @@ function getValidationState(values: {
   };
 }
 
+function toSessionUser(user: User): SessionUser {
+  return {
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    name: user.name,
+    avatarUrl: user.avatarUrl,
+  };
+}
+
 export function useSignup(): UseSignupReturn {
   const [state, setState] = useState<SignupState>(initialSignupState);
+  const stateRef = useRef(state);
+  const submitLockRef = useRef(false);
+  const { setSessionUser } = useSession();
+
+  stateRef.current = state;
 
   function updateFormState(
     nextValues: Partial<
@@ -104,9 +125,13 @@ export function useSignup(): UseSignupReturn {
   }
 
   async function signup() {
-    if (!state.isFormValid || state.isLoading) {
+    const snapshot = stateRef.current;
+
+    if (!snapshot.isFormValid || submitLockRef.current) {
       return;
     }
+
+    submitLockRef.current = true;
 
     setState((current) => ({
       ...current,
@@ -115,22 +140,31 @@ export function useSignup(): UseSignupReturn {
       signupUser: null,
     }));
 
-    const result = await signupService.signup(
-      state.username,
-      state.email,
-      state.password,
-      state.confirmPassword
-    );
+    try {
+      const result = await signupService.signup(
+        snapshot.username,
+        snapshot.email,
+        snapshot.password,
+        snapshot.confirmPassword
+      );
 
-    setState((current) => ({
-      ...current,
-      isLoading: false,
-      formError: result.success ? "" : result.message,
-      signupUser: result.success ? result.data : null,
-    }));
+      if (result.success) {
+        setSessionUser(toSessionUser(result.data));
+      }
+
+      setState((current) => ({
+        ...current,
+        isLoading: false,
+        formError: result.success ? "" : result.message,
+        signupUser: result.success ? result.data : null,
+      }));
+    } finally {
+      submitLockRef.current = false;
+    }
   }
 
   function resetSignupState() {
+    submitLockRef.current = false;
     setState(initialSignupState);
   }
 

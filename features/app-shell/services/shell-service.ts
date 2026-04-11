@@ -1,14 +1,32 @@
 import type { NavItem, ShellLayoutConfig } from "@/types/app-shell";
 
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
+const MAIN_NAV_ROUTES = new Set(["/", "/create"]);
+const PROFILE_ROOT_ROUTE_PATTERN = /^\/u\/[^/]+$/;
 
 function buildProfileHref(username?: string) {
   return username ? `/u/${username}` : "/";
 }
 
+function isAuthRoute(pathname: string) {
+  return AUTH_ROUTES.has(pathname);
+}
+
+function isProfileRootRoute(pathname: string) {
+  return PROFILE_ROOT_ROUTE_PATTERN.test(pathname);
+}
+
+function isMainShellRoute(pathname: string) {
+  return MAIN_NAV_ROUTES.has(pathname) || isProfileRootRoute(pathname);
+}
+
+function matchesPrefix(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 export const shellService = {
   getShellLayoutConfig(pathname: string): ShellLayoutConfig {
-    if (AUTH_ROUTES.has(pathname)) {
+    if (isAuthRoute(pathname)) {
       return {
         showHeader: false,
         showMobileNav: false,
@@ -22,7 +40,7 @@ export const shellService = {
       showHeader: true,
       showMobileNav: true,
       showDesktopSidebar: true,
-      showBackButton: pathname !== "/",
+      showBackButton: !isMainShellRoute(pathname),
       showMenuButton: true,
     };
   },
@@ -57,7 +75,7 @@ export const shellService = {
     const matchedItem = navItems.find(
       (item) =>
         pathname === item.href ||
-        item.matchPrefixes?.some((prefix) => pathname.startsWith(prefix))
+        item.matchPrefixes?.some((prefix) => matchesPrefix(pathname, prefix))
     );
 
     return matchedItem?.href ?? "";

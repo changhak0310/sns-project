@@ -7,6 +7,9 @@ import {
 } from "@/lib/validators/auth";
 import type { SignupResult } from "@/types/auth";
 
+const NETWORK_ERROR_MESSAGE =
+  "\uB124\uD2B8\uC6CC\uD06C \uC624\uB958\uAC00 \uBC1C\uC0DD\uD588\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.";
+
 function validateUsername(username: string) {
   return getUsernameValidationMessage(username) === "";
 }
@@ -23,6 +26,33 @@ function validateConfirmPassword(password: string, confirmPassword: string) {
   return getConfirmPasswordValidationMessage(password, confirmPassword) === "";
 }
 
+function getSignupValidationMessage(
+  username: string,
+  email: string,
+  password: string,
+  confirmPassword: string
+) {
+  const usernameMessage = getUsernameValidationMessage(username);
+
+  if (usernameMessage) {
+    return usernameMessage;
+  }
+
+  const emailMessage = getEmailValidationMessage(email);
+
+  if (emailMessage) {
+    return emailMessage;
+  }
+
+  const passwordMessage = getPasswordValidationMessage(password);
+
+  if (passwordMessage) {
+    return passwordMessage;
+  }
+
+  return getConfirmPasswordValidationMessage(password, confirmPassword);
+}
+
 export const signupService = {
   validateUsername,
   validateEmail,
@@ -35,31 +65,17 @@ export const signupService = {
     password: string,
     confirmPassword: string
   ): Promise<SignupResult> {
-    if (!validateUsername(username)) {
-      return {
-        success: false,
-        message: getUsernameValidationMessage(username),
-      };
-    }
+    const validationMessage = getSignupValidationMessage(
+      username,
+      email,
+      password,
+      confirmPassword
+    );
 
-    if (!validateEmail(email)) {
+    if (validationMessage) {
       return {
         success: false,
-        message: getEmailValidationMessage(email),
-      };
-    }
-
-    if (!validatePassword(password)) {
-      return {
-        success: false,
-        message: getPasswordValidationMessage(password),
-      };
-    }
-
-    if (!validateConfirmPassword(password, confirmPassword)) {
-      return {
-        success: false,
-        message: getConfirmPasswordValidationMessage(password, confirmPassword),
+        message: validationMessage,
       };
     }
 
@@ -68,7 +84,7 @@ export const signupService = {
     } catch {
       return {
         success: false,
-        message: "네트워크 오류가 발생했습니다. 다시 시도해주세요.",
+        message: NETWORK_ERROR_MESSAGE,
       };
     }
   },

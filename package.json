@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test"
+    "test": "node --test",
+    "auto:pr": "powershell -ExecutionPolicy Bypass -File ./scripts/codex-auto-pr.ps1 -CreateBranchIfNeeded"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -18,6 +18,34 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Codex Auto PR
+
+This repo includes `scripts/codex-auto-pr.ps1` to watch git changes, auto-commit them after an idle window, push the active branch, and create one pull request if none exists yet.
+
+Before running it, set a GitHub token in PowerShell:
+
+```powershell
+$env:GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"
+```
+
+Then start the watcher:
+
+```bash
+npm run auto:pr
+```
+
+Useful options:
+
+- `npm run auto:pr -- -BranchName code_rabbit -BaseBranch master`
+- `npm run auto:pr -- -IdleSeconds 30`
+- `npm run auto:pr -- -RunOnce`
+
+Notes:
+
+- If you are on the base branch, the script creates a `codex-auto/<timestamp>` branch because the package script uses `-CreateBranchIfNeeded`.
+- Only git-visible changes are committed. Files ignored by `.gitignore` are skipped automatically.
+- Stop the watcher with `Ctrl+C`.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

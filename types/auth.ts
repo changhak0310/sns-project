@@ -7,6 +7,14 @@ export type User = {
   accessToken: string;
 };
 
+export type SessionUser = {
+  id: number;
+  email: string;
+  username: string;
+  name: string;
+  avatarUrl?: string;
+};
+
 export type AuthResult =
   | {
       success: true;
@@ -17,10 +25,20 @@ export type AuthResult =
       message: string;
     };
 
+export type LogoutResult =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
 export type SignupResult = AuthResult;
 export type SignupApiResponse = SignupResult;
 export type LoginResult = AuthResult;
 export type LoginApiResponse = LoginResult;
+export type LogoutApiResponse = LogoutResult;
 
 export type AuthFieldProps = {
   value: string;
@@ -40,6 +58,7 @@ export type AuthSubmitButtonProps = {
 
 export type SignupSubmitButtonProps = AuthSubmitButtonProps;
 export type LoginSubmitButtonProps = AuthSubmitButtonProps;
+export type LogoutButtonProps = AuthSubmitButtonProps;
 
 export type AuthErrorMessageProps = {
   message: string;
@@ -47,6 +66,17 @@ export type AuthErrorMessageProps = {
 
 export type SignupErrorMessageProps = AuthErrorMessageProps;
 export type LoginErrorMessageProps = AuthErrorMessageProps;
+export type LogoutErrorMessageProps = AuthErrorMessageProps;
+
+export type AuthActionAreaProps = {
+  loginHref: string;
+  profileHref: string;
+};
+
+export type AuthLinkButtonProps = {
+  href: string;
+  label: string;
+};
 
 export type SignupState = {
   username: string;
@@ -93,3 +123,18 @@ export type LoginActions = {
 };
 
 export type UseLoginReturn = LoginState & LoginActions;
+
+export type LogoutState = {
+  actionError: string;
+  isLoading: boolean;
+};
+
+export type LogoutComputed = {
+  sessionUser: SessionUser | null;
+};
+
+export type LogoutActions = {
+  logout: () => Promise<void>;
+};
+
+export type UseLogoutReturn = LogoutState & LogoutComputed & LogoutActions;
