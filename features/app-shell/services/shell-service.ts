@@ -3,7 +3,7 @@ import type { NavItem, ShellLayoutConfig } from "@/types/app-shell";
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
 
 function buildProfileHref(username?: string) {
-  return username ? `/u/${username}` : "/";
+  return username ? `/u/${username}` : "/login";
 }
 
 export const shellService = {

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import type { SessionUser } from "@/types/auth";
+
 export type NavItem = {
   label: string;
   href: string;
@@ -22,6 +24,8 @@ export type LayoutChildrenProps = {
 export type MainLayoutProps = {
   children: ReactNode;
   modal?: ReactNode;
+  headerAuthAction?: ReactNode;
+  sidebarAuthAction?: ReactNode;
 };
 
 export type ShellFrameProps = {
@@ -51,6 +55,8 @@ export type DesktopSidebarProps = {
   navItems: NavItem[];
   activeHref: string;
   collapsed: boolean;
+  sessionUser: SessionUser | null;
+  accountActionArea?: ReactNode;
   onToggleCollapse: () => void;
 };
 
@@ -63,6 +69,7 @@ export type AppShellComputed = {
   layoutConfig: ShellLayoutConfig;
   navItems: NavItem[];
   activeHref: string;
+  sessionUser: SessionUser | null;
 };
 
 export type AppShellActions = {
