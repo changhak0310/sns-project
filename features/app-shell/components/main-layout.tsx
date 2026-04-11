@@ -38,7 +38,12 @@ function getHeaderTitle(pathname: string) {
   return "Orbit";
 }
 
-export function MainLayout({ children, modal }: MainLayoutProps) {
+export function MainLayout({
+  children,
+  modal,
+  headerAuthAction,
+  sidebarAuthAction,
+}: MainLayoutProps) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
   const {
@@ -47,6 +52,7 @@ export function MainLayout({ children, modal }: MainLayoutProps) {
     layoutConfig,
     navItems,
     activeHref,
+    sessionUser,
     closeMobileNav,
     toggleMobileNav,
     toggleDesktopSidebar,
@@ -74,21 +80,26 @@ export function MainLayout({ children, modal }: MainLayoutProps) {
             onBack={() => router.back()}
             onMenuClick={toggleMobileNav}
             rightAction={
-              <Link
-                href={pathname.startsWith("/design-system") ? "/" : "/design-system"}
-                className={cn(
-                  "inline-flex h-11 items-center gap-2 rounded-full border border-[var(--ds-border-subtle)] bg-[rgba(255,255,255,0.72)] px-3 text-sm font-semibold text-[var(--ds-color-primary-900)] transition duration-200 hover:border-[var(--ds-border-strong)] hover:bg-[var(--ds-color-neutral-0)]"
-                )}
-              >
-                {pathname.startsWith("/design-system") ? (
-                  <Home className="h-4 w-4" aria-hidden />
-                ) : (
-                  <Grid2X2 className="h-4 w-4" aria-hidden />
-                )}
-                <span className="hidden sm:inline">
-                  {pathname.startsWith("/design-system") ? "Home" : "System"}
-                </span>
-              </Link>
+              <div className="flex items-center justify-end gap-2">
+                {headerAuthAction ? (
+                  <div className="lg:hidden">{headerAuthAction}</div>
+                ) : null}
+                <Link
+                  href={pathname.startsWith("/design-system") ? "/" : "/design-system"}
+                  className={cn(
+                    "hidden h-11 items-center gap-2 rounded-full border border-[var(--ds-border-subtle)] bg-[rgba(255,255,255,0.72)] px-3 text-sm font-semibold text-[var(--ds-color-primary-900)] transition duration-200 hover:border-[var(--ds-border-strong)] hover:bg-[var(--ds-color-neutral-0)] sm:inline-flex"
+                  )}
+                >
+                  {pathname.startsWith("/design-system") ? (
+                    <Home className="h-4 w-4" aria-hidden />
+                  ) : (
+                    <Grid2X2 className="h-4 w-4" aria-hidden />
+                  )}
+                  <span className="hidden sm:inline">
+                    {pathname.startsWith("/design-system") ? "Home" : "System"}
+                  </span>
+                </Link>
+              </div>
             }
           />
         ) : undefined
@@ -104,6 +115,8 @@ export function MainLayout({ children, modal }: MainLayoutProps) {
             activeHref={activeHref}
             collapsed={isDesktopSidebarCollapsed}
             navItems={navItems}
+            sessionUser={sessionUser}
+            accountActionArea={sidebarAuthAction}
             onToggleCollapse={toggleDesktopSidebar}
           />
         ) : undefined
