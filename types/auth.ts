@@ -7,7 +7,7 @@ export type User = {
   accessToken: string;
 };
 
-export type SignupResult =
+export type AuthResult =
   | {
       success: true;
       data: User;
@@ -17,24 +17,36 @@ export type SignupResult =
       message: string;
     };
 
+export type SignupResult = AuthResult;
 export type SignupApiResponse = SignupResult;
+export type LoginResult = AuthResult;
+export type LoginApiResponse = LoginResult;
 
-export type SignupFieldProps = {
+export type AuthFieldProps = {
   value: string;
   fieldErrorMessage?: string;
   disabled?: boolean;
   onChange: (value: string) => void;
 };
 
-export type SignupSubmitButtonProps = {
+export type SignupFieldProps = AuthFieldProps;
+export type LoginFieldProps = AuthFieldProps;
+
+export type AuthSubmitButtonProps = {
   isLoading: boolean;
   disabled: boolean;
   onClick: () => void;
 };
 
-export type SignupErrorMessageProps = {
+export type SignupSubmitButtonProps = AuthSubmitButtonProps;
+export type LoginSubmitButtonProps = AuthSubmitButtonProps;
+
+export type AuthErrorMessageProps = {
   message: string;
 };
+
+export type SignupErrorMessageProps = AuthErrorMessageProps;
+export type LoginErrorMessageProps = AuthErrorMessageProps;
 
 export type SignupState = {
   username: string;
@@ -61,3 +73,23 @@ export type SignupActions = {
 };
 
 export type UseSignupReturn = SignupState & SignupActions;
+
+export type LoginState = {
+  email: string;
+  password: string;
+  emailError: string;
+  passwordError: string;
+  formError: string;
+  isFormValid: boolean;
+  isLoading: boolean;
+  loginUser: User | null;
+};
+
+export type LoginActions = {
+  setEmail: (value: string) => void;
+  setPassword: (value: string) => void;
+  login: () => Promise<void>;
+  resetLoginState: () => void;
+};
+
+export type UseLoginReturn = LoginState & LoginActions;
