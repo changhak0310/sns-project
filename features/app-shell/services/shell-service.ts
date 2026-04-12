@@ -32,7 +32,7 @@ export const shellService = {
 
     return [
       {
-        label: "Home",
+        label: "Feed",
         href: "/",
         icon: "home",
       },

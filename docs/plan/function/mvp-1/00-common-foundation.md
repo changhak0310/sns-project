@@ -20,6 +20,14 @@ type NavItem = {
 };
 ```
 
+<a id="type-shell-theme"></a>
+
+##### a-1. `ShellTheme`
+
+```ts
+type ShellTheme = "dark" | "light";
+```
+
 <a id="type-shell-layout-config"></a>
 
 ##### b. `ShellLayoutConfig`
@@ -123,6 +131,7 @@ type ShellFrameProps = {
   mobileNav?: ReactNode;
   desktopSidebar?: ReactNode;
   modal?: ReactNode;
+  shellTheme?: ShellTheme;
   onCloseMobileNav?: () => void;
 };
 ```
@@ -163,6 +172,8 @@ type DesktopSidebarProps = {
   activeHref: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  shellTheme: ShellTheme;
+  onToggleTheme: () => void;
 };
 ```
 
@@ -171,12 +182,12 @@ type DesktopSidebarProps = {
 | 컴포넌트명 | 역할 | 사용하는 Hook | 받는 props | 이벤트에서 호출하는 함수 | 관리하는 state |
 | --- | --- | --- | --- | --- | --- |
 | `RootLayout` | 앱 전체 HTML 루트와 공통 provider를 감싼다. | 없음 | <a href="#type-layout-children-props"><code>LayoutChildrenProps</code></a> | 없음 | 없음 |
-| `MainLayout` | 메인 라우트 공통 셸 구성과 배치를 담당한다. | `useAppShell()` | <a href="#type-main-layout-props"><code>MainLayoutProps</code></a> | `onUnmount -> resetShellState()` | `isMobileNavOpen`, `isDesktopSidebarCollapsed` |
+| `MainLayout` | 메인 라우트 공통 셸 구성과 배치를 담당한다. 셸 테마와 내부 UI 테마를 함께 연결한다. | `useAppShell()`, `useShellTheme()` | <a href="#type-main-layout-props"><code>MainLayoutProps</code></a> | `onUnmount -> resetShellState()` | `isMobileNavOpen`, `isDesktopSidebarCollapsed` |
 | `AuthLayout` | 로그인, 회원가입 등 인증 라우트 전용 단순 레이아웃을 담당한다. | 없음 | <a href="#type-layout-children-props"><code>LayoutChildrenProps</code></a> | 없음 | 없음 |
-| `ShellFrame` | 헤더, 본문, 모바일 네비, 데스크톱 사이드바, 모달 슬롯을 배치한다. | 없음 | <a href="#type-shell-frame-props"><code>ShellFrameProps</code></a> | `onCloseMobileNav -> onCloseMobileNav?.()` | 없음 |
+| `ShellFrame` | 헤더, 본문, 모바일 네비, 데스크톱 사이드바, 모달 슬롯을 배치한다. 루트에 `data-shell-theme`를 적용한다. | 없음 | <a href="#type-shell-frame-props"><code>ShellFrameProps</code></a> | `onCloseMobileNav -> onCloseMobileNav?.()` | 없음 |
 | `AppHeader` | 화면 제목, 뒤로가기 버튼, 모바일 메뉴 버튼을 노출한다. | 없음 | <a href="#type-app-header-props"><code>AppHeaderProps</code></a> | `onMenuClick -> onMenuClick?.()` | 없음 |
 | `BottomNav` | 모바일 하단 탭 네비게이션을 렌더링한다. | 없음 | <a href="#type-bottom-nav-props"><code>BottomNavProps</code></a> | 없음 | 없음 |
-| `DesktopSidebar` | 데스크톱 사이드바 네비게이션과 축소 토글을 렌더링한다. | 없음 | <a href="#type-desktop-sidebar-props"><code>DesktopSidebarProps</code></a> | `onToggleCollapse -> onToggleCollapse()` | 없음 |
+| `DesktopSidebar` | 데스크톱 사이드바 네비게이션, 축소 토글, 셸 테마 전환 버튼을 렌더링한다. | 없음 | <a href="#type-desktop-sidebar-props"><code>DesktopSidebarProps</code></a> | `onToggleCollapse -> onToggleCollapse()`, `onToggleTheme -> onToggleTheme()` | 없음 |
 
 ### B. 훅
 
@@ -283,6 +294,24 @@ type UseAppShellReturn = AppShellState & AppShellComputed & AppShellActions;
 | 모바일 메뉴 토글 | `isMobileNavOpen = !isMobileNavOpen` |
 | 데스크톱 사이드바 토글 | `isDesktopSidebarCollapsed = !isDesktopSidebarCollapsed` |
 | 셸 상태 초기화 | `isMobileNavOpen = false`, `isDesktopSidebarCollapsed = false` |
+
+#### III. useShellTheme
+
+##### a. 훅 요약
+
+| 항목 | 내용 |
+| --- | --- |
+| 훅명 | `useShellTheme(defaultTheme?: ShellTheme)` |
+| 역할 | 메인 셸의 라이트/다크 테마를 로컬 상태와 브라우저 저장소에 동기화한다. |
+| 저장 키 | `orbit-shell-theme` |
+| 주요 반환값 | `theme`, `setTheme()`, `toggleTheme()` |
+
+##### b. 동작 규칙
+
+- 저장된 `orbit-shell-theme` 값이 있으면 기본 테마보다 우선한다.
+- `ShellFrame` 루트에는 `data-shell-theme={theme}`를 적용한다.
+- 메인 콘텐츠 래퍼에는 `data-ui-theme={theme}`를 적용해 카드, 버튼, 입력 등 공통 UI가 같은 테마를 따른다.
+- 데스크톱 사이드바의 `Theme` 버튼은 `toggleTheme()`을 호출한다.
 
 ### C. 서비스
 

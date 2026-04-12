@@ -1,11 +1,7 @@
 import type { LoginApiResponse, SignupApiResponse, User } from "@/types/auth";
+import type { ApiResponse } from "@/types/api";
 
 type AuthApiResponse = LoginApiResponse | SignupApiResponse;
-type AuthResponsePayload = {
-  success?: boolean;
-  data?: User;
-  message?: string;
-};
 
 async function parseAuthResponse<T extends AuthApiResponse>(
   response: Response
@@ -19,7 +15,7 @@ async function parseAuthResponse<T extends AuthApiResponse>(
       : "네트워크 오류가 발생했습니다. 다시 시도해주세요.";
 
   try {
-    const payload = (await response.json()) as AuthResponsePayload;
+    const payload = (await response.json()) as ApiResponse<User>;
 
     if (payload.success === true && payload.data) {
       return {
@@ -49,7 +45,7 @@ async function parseAuthResponse<T extends AuthApiResponse>(
 
 export const authRepository = {
   async login(email: string, password: string): Promise<LoginApiResponse> {
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch("/api/v1/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +64,7 @@ export const authRepository = {
     email: string,
     password: string
   ): Promise<SignupApiResponse> {
-    const response = await fetch("/api/auth/signup", {
+    const response = await fetch("/api/v1/auth/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

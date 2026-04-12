@@ -7,6 +7,11 @@ export type User = {
   accessToken: string;
 };
 
+export type SessionUser = Pick<
+  User,
+  "id" | "email" | "username" | "name" | "avatarUrl"
+>;
+
 export type AuthResult =
   | {
       success: true;

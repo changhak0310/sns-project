@@ -1,10 +1,16 @@
 "use client";
 
 import type { FormEvent } from "react";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthFormCard } from "@/features/auth/components/auth-form-card";
 import { AuthHeader } from "@/features/auth/components/auth-header";
 import { AuthSwitchLink } from "@/features/auth/components/auth-switch-link";
+import {
+  buildAuthRedirectHref,
+  resolveRedirectTo,
+} from "@/lib/session/redirect";
 
 import { useLogin } from "../hooks/use-login";
 import { EmailInputField } from "./email-input-field";
@@ -13,6 +19,8 @@ import { LoginSubmitButton } from "./login-submit-button";
 import { PasswordInputField } from "./password-input-field";
 
 export function LoginForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     email,
     password,
@@ -21,10 +29,21 @@ export function LoginForm() {
     formError,
     isFormValid,
     isLoading,
+    loginUser,
     setEmail,
     setPassword,
     login,
   } = useLogin();
+  const redirectTo = resolveRedirectTo(searchParams.get("redirect"));
+  const signupHref = buildAuthRedirectHref("/signup", redirectTo);
+
+  useEffect(() => {
+    if (!loginUser) {
+      return;
+    }
+
+    router.replace(redirectTo);
+  }, [loginUser, redirectTo, router]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,8 +54,8 @@ export function LoginForm() {
     <AuthFormCard>
       <div className="flex flex-col gap-6">
         <AuthHeader
-          title="빠르게 돌아와서 바로 읽고, 바로 반응하세요."
-          description="가볍게 로그인하고 오늘의 피드와 저장한 아카이브를 이어서 확인합니다."
+          title="Log in and continue where you left off."
+          description="Mock auth creates a session cookie so protected routes can send you back safely."
         />
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <EmailInputField
@@ -61,9 +80,9 @@ export function LoginForm() {
           />
         </form>
         <AuthSwitchLink
-          label="처음이신가요?"
-          href="/signup"
-          actionLabel="계정 만들기"
+          label="Need an account?"
+          href={signupHref}
+          actionLabel="Create one"
         />
       </div>
     </AuthFormCard>

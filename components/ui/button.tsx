@@ -4,18 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
 const buttonVariants = cva(
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border text-sm font-semibold tracking-[-0.01em] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-color-neutral-0)] disabled:pointer-events-none disabled:opacity-55 aria-busy:pointer-events-none",
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border text-sm font-semibold tracking-[-0.01em] transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-ui-focus-offset)] disabled:pointer-events-none disabled:opacity-55 aria-busy:pointer-events-none",
   {
     variants: {
       variant: {
         primary:
-          "border-transparent bg-[var(--ds-color-primary-900)] text-[var(--ds-color-neutral-0)] shadow-[var(--ds-shadow-sm)] hover:bg-[var(--ds-color-primary-700)] active:scale-[0.99]",
+          "border-transparent bg-[var(--ds-ui-primary-bg)] text-[var(--ds-ui-primary-text)] shadow-[var(--ds-ui-shadow-sm)] hover:bg-[var(--ds-ui-primary-bg-hover)] active:scale-[0.99]",
         secondary:
-          "border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] text-[var(--ds-color-primary-900)] hover:bg-[var(--ds-color-neutral-50)]",
+          "border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] text-[var(--ds-ui-text-primary)] hover:bg-[var(--ds-ui-surface-muted)]",
         ghost:
-          "border-transparent bg-transparent text-[var(--ds-color-primary-900)] hover:bg-[var(--ds-color-neutral-100)]",
+          "border-transparent bg-transparent text-[var(--ds-ui-text-primary)] hover:bg-[var(--ds-ui-surface-soft)]",
         outline:
-          "border-[var(--ds-border-strong)] bg-transparent text-[var(--ds-color-primary-900)] hover:bg-[var(--ds-color-neutral-0)]",
+          "border-[var(--ds-ui-border-strong)] bg-transparent text-[var(--ds-ui-text-primary)] hover:bg-[var(--ds-ui-outline-hover)]",
         danger:
           "border-transparent bg-[var(--ds-color-error-500)] text-[var(--ds-color-neutral-0)] shadow-[var(--ds-shadow-sm)] hover:bg-[var(--ds-color-error-600)] active:scale-[0.99]",
       },

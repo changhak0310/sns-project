@@ -22,8 +22,8 @@ export function Divider({
           : "h-full min-h-6 w-px self-stretch",
         inset && orientation === "horizontal" ? "mx-2 w-[calc(100%-1rem)]" : "",
         tone === "subtle"
-          ? "bg-[var(--ds-border-subtle)]"
-          : "bg-[var(--ds-border-strong)]",
+          ? "bg-[var(--ds-ui-border-subtle)]"
+          : "bg-[var(--ds-ui-border-strong)]",
         className
       )}
     />

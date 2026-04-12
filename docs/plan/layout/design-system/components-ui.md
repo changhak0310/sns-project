@@ -6,6 +6,7 @@
 
 - 공통 UI는 기능 정책 없이 Props 기반으로만 동작한다
 - 상태 표현은 토큰으로만 조합한다
+- 라이트/다크 전환은 variant를 늘리지 않고 `data-ui-theme`와 `--ds-ui-*` 토큰으로 처리한다
 - 공통 UI는 repository, action, session mutation을 직접 호출하지 않는다
 - feature 전용 상호작용이 붙기 시작하면 `features/*/components`로 올린다
 
@@ -19,6 +20,7 @@
 | Props | `variant / size / disabled / loading / fullWidth / leadingIcon / trailingIcon` |
 | Variants | `primary` / `secondary` / `ghost` / `outline` / `danger` |
 | Sizes | `sm / md / lg` |
+| 테마 규칙 | 색상, border, focus ring은 모두 `--ds-ui-*` semantic token을 따른다 |
 | loading 상태 | 텍스트 대신 스피너 표시 + 클릭 이벤트 차단 |
 
 ### IconButton
@@ -37,6 +39,7 @@
 | 역할 | 이메일, 이름, 검색, 짧은 텍스트 입력 |
 | Props | `value / placeholder / error / leadingIcon / trailingIcon / disabled` |
 | Variants | `default` / `quiet` / `search` |
+| 테마 규칙 | 배경, placeholder, focus/error ring은 `data-ui-theme`에 맞춰 자동 전환된다 |
 | 에러 상태 | 하단 에러 텍스트 + 에러 보더 |
 
 ### Textarea
@@ -80,6 +83,7 @@
 | 역할 | 피드 카드, 추천 카드, 정보 카드의 기본 컨테이너 |
 | Props | `padding / radius / bordered / elevated / interactive` |
 | 규칙 | surface + subtle border + shadow 조합 |
+| 테마 규칙 | `data-ui-theme` 스코프에 따라 surface, border, title, description이 함께 전환된다 |
 
 ### Tabs
 
@@ -88,6 +92,7 @@
 | 역할 | 프로필 탭, 알림 필터, 탐색 섹션 전환 |
 | Props | `items / value / onChange / variant / size` |
 | Variants | `underline` / `pill` / `segmented` |
+| 테마 규칙 | underline/pill/segmented 모두 공통 `ui` 토큰을 사용해 같은 테마를 유지한다 |
 
 ### Sheet
 

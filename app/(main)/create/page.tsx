@@ -28,7 +28,7 @@ export default function CreatePage() {
       ]}
     >
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+        <Card bordered elevated className="bg-[var(--ds-ui-surface)]">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -64,13 +64,13 @@ export default function CreatePage() {
           <Card
             bordered
             elevated
-            className="bg-[linear-gradient(180deg,var(--ds-mood-discover-bg),rgba(255,255,255,0.88))]"
+            className="bg-[linear-gradient(180deg,var(--ds-ui-surface),var(--ds-ui-surface-muted))]"
           >
             <CardHeader>
               <CardTitle>Layout Contract</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3 text-sm leading-6 text-[var(--ds-color-neutral-700)]">
+              <ul className="space-y-3 text-sm leading-6 text-[var(--ds-ui-text-secondary)]">
                 <li>헤더는 항상 보입니다.</li>
                 <li>서브 라우트이므로 뒤로가기 버튼이 활성화됩니다.</li>
                 <li>모바일 메뉴와 데스크톱 사이드바는 동일한 정보 구조를 씁니다.</li>

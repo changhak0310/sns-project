@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
 const iconButtonVariants = cva(
-  "inline-flex items-center justify-center rounded-full border transition-[background-color,border-color,color,transform] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-color-neutral-0)] disabled:pointer-events-none disabled:opacity-55 aria-busy:pointer-events-none",
+  "inline-flex items-center justify-center rounded-full border transition-[background-color,border-color,color,transform] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-ui-focus-offset)] disabled:pointer-events-none disabled:opacity-55 aria-busy:pointer-events-none",
   {
     variants: {
       size: {
@@ -14,14 +14,14 @@ const iconButtonVariants = cva(
       },
       tone: {
         default:
-          "border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] text-[var(--ds-color-primary-900)] hover:bg-[var(--ds-color-neutral-50)]",
+          "border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] text-[var(--ds-ui-text-primary)] hover:bg-[var(--ds-ui-surface-muted)]",
         accent:
-          "border-transparent bg-[var(--ds-color-accent-100)] text-[var(--ds-color-accent-500)] hover:bg-[var(--ds-color-accent-200)]",
+          "border-transparent bg-[var(--ds-ui-accent-soft-bg)] text-[var(--ds-ui-accent-soft-text)] hover:bg-[rgba(239,109,71,0.22)]",
         danger:
-          "border-transparent bg-[var(--ds-color-error-100)] text-[var(--ds-color-error-500)] hover:bg-[var(--ds-color-error-200)]",
+          "border-transparent bg-[var(--ds-ui-error-soft-bg)] text-[var(--ds-ui-error-soft-text)] hover:bg-[rgba(209,82,82,0.24)]",
       },
       active: {
-        true: "shadow-[var(--ds-shadow-sm)]",
+        true: "shadow-[var(--ds-ui-shadow-sm)]",
         false: "",
       },
     },

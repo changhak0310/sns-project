@@ -22,23 +22,23 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 rounded-[var(--ds-radius-xl)] border px-5 py-6 shadow-[var(--ds-shadow-sm)]",
+        "flex flex-col gap-4 rounded-[var(--ds-radius-xl)] border px-5 py-6 shadow-[var(--ds-ui-shadow-sm)]",
         tone === "alert"
-          ? "border-transparent bg-[var(--ds-mood-alert-bg)]"
-          : "border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)]",
+          ? "border-transparent bg-[var(--ds-ui-warning-soft-bg)]"
+          : "border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)]",
         className
       )}
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--ds-color-neutral-0)] text-[var(--ds-color-error-500)]">
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--ds-ui-surface-soft)] text-[var(--ds-color-error-500)]">
           <AlertCircle className="size-5" aria-hidden />
         </span>
         <div className="space-y-1">
-          <h3 className="text-base font-semibold tracking-[-0.03em] text-[var(--ds-color-primary-900)]">
+          <h3 className="text-base font-semibold tracking-[-0.03em] text-[var(--ds-ui-text-primary)]">
             {title}
           </h3>
-          <p className="text-sm leading-6 text-[var(--ds-color-neutral-700)]">{description}</p>
+          <p className="text-sm leading-6 text-[var(--ds-ui-text-secondary)]">{description}</p>
         </div>
       </div>
       <div>
