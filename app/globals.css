@@ -59,6 +59,47 @@
   --ds-mood-focus-dark-fg: #f6f3ef;
   --ds-mood-discover-bg: #fff6f1;
   --ds-mood-alert-bg: #fff7ef;
+  --ds-shell-bg: #0c1118;
+  --ds-shell-surface: rgba(16, 22, 31, 0.9);
+  --ds-shell-surface-strong: #131a24;
+  --ds-shell-surface-backdrop: rgba(12, 17, 24, 0.86);
+  --ds-shell-surface-floating: rgba(12, 17, 24, 0.96);
+  --ds-shell-border: rgba(255, 255, 255, 0.08);
+  --ds-shell-border-strong: rgba(255, 255, 255, 0.16);
+  --ds-shell-highlight: rgba(255, 255, 255, 0.05);
+  --ds-shell-hover: rgba(255, 255, 255, 0.08);
+  --ds-shell-overlay: rgba(4, 8, 14, 0.7);
+  --ds-shell-handle: rgba(255, 255, 255, 0.16);
+  --ds-shell-text: #f5f7fb;
+  --ds-shell-text-muted: #98a4b3;
+  --ds-ui-surface: var(--ds-color-neutral-0);
+  --ds-ui-surface-muted: var(--ds-color-neutral-50);
+  --ds-ui-surface-soft: var(--ds-color-neutral-100);
+  --ds-ui-surface-strong: var(--ds-color-neutral-0);
+  --ds-ui-text-primary: var(--ds-color-primary-900);
+  --ds-ui-text-secondary: var(--ds-color-neutral-700);
+  --ds-ui-text-muted: var(--ds-color-neutral-500);
+  --ds-ui-border-subtle: var(--ds-border-subtle);
+  --ds-ui-border-strong: var(--ds-border-strong);
+  --ds-ui-shadow-sm: var(--ds-shadow-sm);
+  --ds-ui-shadow-md: var(--ds-shadow-md);
+  --ds-ui-focus-offset: var(--ds-color-neutral-0);
+  --ds-ui-focus-ring: var(--ds-color-accent-100);
+  --ds-ui-error-focus-ring: var(--ds-color-error-100);
+  --ds-ui-primary-bg: var(--ds-color-primary-900);
+  --ds-ui-primary-bg-hover: var(--ds-color-primary-700);
+  --ds-ui-primary-text: var(--ds-color-neutral-0);
+  --ds-ui-neutral-soft-bg: var(--ds-color-neutral-100);
+  --ds-ui-neutral-soft-text: var(--ds-color-neutral-700);
+  --ds-ui-accent-soft-bg: var(--ds-color-accent-100);
+  --ds-ui-accent-soft-text: var(--ds-color-accent-500);
+  --ds-ui-success-soft-bg: var(--ds-color-success-100);
+  --ds-ui-success-soft-text: var(--ds-color-success-500);
+  --ds-ui-warning-soft-bg: var(--ds-color-warning-100);
+  --ds-ui-warning-soft-text: var(--ds-color-warning-600);
+  --ds-ui-error-soft-bg: var(--ds-color-error-100);
+  --ds-ui-error-soft-text: var(--ds-color-error-500);
+  --ds-ui-outline-hover: var(--ds-color-neutral-0);
 
   --color-highlight-soft: var(--ds-mood-discover-bg);
   --color-overlay: rgba(20, 17, 15, 0.48);
@@ -144,4 +185,57 @@ select {
 
 ::selection {
   background: rgba(255, 149, 112, 0.28);
+}
+
+[data-ui-theme="dark"] {
+  color-scheme: dark;
+  --ds-ui-surface: rgba(17, 23, 32, 0.92);
+  --ds-ui-surface-muted: rgba(21, 29, 41, 0.94);
+  --ds-ui-surface-soft: rgba(255, 255, 255, 0.05);
+  --ds-ui-surface-strong: rgba(255, 255, 255, 0.08);
+  --ds-ui-text-primary: var(--ds-shell-text);
+  --ds-ui-text-secondary: #d2d9e3;
+  --ds-ui-text-muted: var(--ds-shell-text-muted);
+  --ds-ui-border-subtle: var(--ds-shell-border);
+  --ds-ui-border-strong: var(--ds-shell-border-strong);
+  --ds-ui-shadow-sm: 0 18px 40px rgba(0, 0, 0, 0.24);
+  --ds-ui-shadow-md: 0 26px 64px rgba(0, 0, 0, 0.32);
+  --ds-ui-focus-offset: var(--ds-shell-surface-strong);
+  --ds-ui-focus-ring: rgba(239, 109, 71, 0.22);
+  --ds-ui-error-focus-ring: rgba(209, 82, 82, 0.22);
+  --ds-ui-primary-bg: var(--ds-shell-text);
+  --ds-ui-primary-bg-hover: #e8eef6;
+  --ds-ui-primary-text: var(--ds-shell-bg);
+  --ds-ui-neutral-soft-bg: rgba(255, 255, 255, 0.06);
+  --ds-ui-neutral-soft-text: #d2dae5;
+  --ds-ui-accent-soft-bg: rgba(239, 109, 71, 0.16);
+  --ds-ui-accent-soft-text: #ffb89d;
+  --ds-ui-success-soft-bg: rgba(44, 143, 90, 0.18);
+  --ds-ui-success-soft-text: #8bd0a7;
+  --ds-ui-warning-soft-bg: rgba(214, 146, 44, 0.18);
+  --ds-ui-warning-soft-text: #f3c26b;
+  --ds-ui-error-soft-bg: rgba(209, 82, 82, 0.18);
+  --ds-ui-error-soft-text: #ff9a9a;
+  --ds-ui-outline-hover: rgba(255, 255, 255, 0.06);
+}
+
+[data-shell-theme="dark"] {
+  color-scheme: dark;
+}
+
+[data-shell-theme="light"] {
+  color-scheme: light;
+  --ds-shell-bg: #f7f2ea;
+  --ds-shell-surface: rgba(255, 251, 245, 0.92);
+  --ds-shell-surface-strong: #fffaf2;
+  --ds-shell-surface-backdrop: rgba(250, 245, 238, 0.9);
+  --ds-shell-surface-floating: rgba(250, 245, 238, 0.96);
+  --ds-shell-border: rgba(32, 28, 25, 0.1);
+  --ds-shell-border-strong: rgba(32, 28, 25, 0.18);
+  --ds-shell-highlight: rgba(32, 28, 25, 0.045);
+  --ds-shell-hover: rgba(32, 28, 25, 0.08);
+  --ds-shell-overlay: rgba(20, 17, 15, 0.24);
+  --ds-shell-handle: rgba(32, 28, 25, 0.16);
+  --ds-shell-text: #1f1a17;
+  --ds-shell-text-muted: #746960;
 }

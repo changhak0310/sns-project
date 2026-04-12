@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
 const textareaVariants = cva(
-  "min-h-[140px] w-full rounded-[var(--ds-radius-lg)] border bg-[var(--ds-color-neutral-0)] px-4 py-3 text-base text-[var(--ds-color-neutral-950)] transition-[border-color,box-shadow,background-color] duration-200 ease-out outline-none placeholder:text-[var(--ds-color-neutral-500)] focus:border-[var(--ds-color-primary-900)] focus:shadow-[0_0_0_4px_var(--ds-color-accent-100)] disabled:opacity-60",
+  "min-h-[140px] w-full rounded-[var(--ds-radius-lg)] border bg-[var(--ds-ui-surface)] px-4 py-3 text-base text-[var(--ds-ui-text-primary)] transition-[border-color,box-shadow,background-color] duration-200 ease-out outline-none placeholder:text-[var(--ds-ui-text-muted)] focus:border-[var(--ds-ui-border-strong)] focus:shadow-[0_0_0_4px_var(--ds-ui-focus-ring)] disabled:opacity-60",
   {
     variants: {
       resize: {
@@ -13,8 +13,8 @@ const textareaVariants = cva(
         both: "resize",
       },
       hasError: {
-        true: "border-[var(--ds-color-error-500)] focus:border-[var(--ds-color-error-500)] focus:shadow-[0_0_0_4px_var(--ds-color-error-100)]",
-        false: "border-[var(--ds-border-subtle)]",
+        true: "border-[var(--ds-color-error-500)] focus:border-[var(--ds-color-error-500)] focus:shadow-[0_0_0_4px_var(--ds-ui-error-focus-ring)]",
+        false: "border-[var(--ds-ui-border-subtle)]",
       },
     },
     defaultVariants: {
@@ -69,7 +69,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             <span />
           )}
           {showCounter && maxLength ? (
-            <p className="text-xs font-medium text-[var(--ds-color-neutral-500)]">
+            <p className="text-xs font-medium text-[var(--ds-ui-text-muted)]">
               {currentLength} / {maxLength}
             </p>
           ) : null}

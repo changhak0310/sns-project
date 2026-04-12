@@ -25,7 +25,13 @@
 | `semantic.error` | 에러, 파괴적 액션 | 레드 계열 |
 | `semantic.success` | 저장 완료, 수정 완료 | 그린 계열 |
 | `semantic.warning` | draft, 주의 상태 | 앰버 계열 |
+| `shell` | 메인 셸 배경, 헤더, 사이드바, 모바일 탭 바 | `dark/light` 전환 대상, `--ds-shell-*` 변수로 관리 |
+| `ui` | 카드, 버튼, 입력, 탭, empty/loading/error surface | `data-ui-theme` 스코프에서 `--ds-ui-*` 변수로 관리 |
 | `overlay` | 모달, 시트, 딤 배경 | 반투명 블랙 |
+
+- 메인 셸 크롬은 `data-shell-theme` 기준으로 `--ds-shell-*` 토큰을 바꾼다.
+- 셸 내부의 공통 UI는 `data-ui-theme` 기준으로 `--ds-ui-*` 토큰을 바꾼다.
+- 같은 화면에서도 셸 토큰과 UI 토큰은 분리해 다룬다. 헤더/사이드바/오버레이는 `shell`, 카드/폼/탭은 `ui`를 우선한다.
 
 ## 3. 무드 토큰
 
@@ -91,9 +97,11 @@
 
 - 루트 배경은 `neutral`의 가장 밝은 톤을 사용한다
 - 메인 셸은 `Header + Content + BottomNav/DesktopSidebar + ModalSlot` 구조를 기본으로 한다
+- 메인 셸 기본 테마는 `dark`이며, 데스크톱 사이드바에서 `dark/light` 전환을 제공한다
+- 셸 테마 전환 값은 로컬에 저장하고, 같은 값을 `data-shell-theme`와 `data-ui-theme`에 함께 전달한다
 - auth 화면은 중앙 정렬 단일 카드 레이아웃을 기본으로 한다
 - auth 화면이 다크 변형일 때는 `focus-dark` 무드와 단일 카드 레이아웃을 함께 사용한다
-- auth, 피드, 탐색은 화이트 기반 surface와 얇은 보더를 우선하고, 무거운 그림자는 최소화한다
+- auth, 피드, 탐색은 얇은 보더와 가벼운 shadow를 우선하고, surface 색은 현재 테마의 `ui` 토큰을 따른다
 - 강조는 색을 많이 쓰기보다 미디어, 여백, 타이포 우선순위로 해결한다
 - auth 화면의 상세 시각 규칙, 상태 규칙, 컴포넌트 매핑은 `docs/plan/layout/design-system/screen-patterns.md`의 `인증 화면` 섹션을 기준으로 한다
 - 게시물 상세는 모바일에서 sheet/modal, 데스크톱에서 2열 상세 레이아웃을 허용한다

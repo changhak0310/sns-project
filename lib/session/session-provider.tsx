@@ -22,6 +22,7 @@ const PREVIEW_SESSION_USER: SessionUser = {
   email: "orbit@example.com",
   username: "preview-user",
   name: "Orbit Preview",
+  avatarUrl: "",
 };
 
 const initialSessionState: SessionState = {

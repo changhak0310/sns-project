@@ -3,7 +3,7 @@ import type { NavItem, ShellLayoutConfig } from "@/types/app-shell";
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
 
 function buildProfileHref(username?: string) {
-  return username ? `/u/${username}` : "/login";
+  return username ? `/u/${username}` : undefined;
 }
 
 export const shellService = {
@@ -28,9 +28,11 @@ export const shellService = {
   },
 
   getNavItems(username?: string): NavItem[] {
+    const profileHref = buildProfileHref(username);
+
     return [
       {
-        label: "Home",
+        label: "Feed",
         href: "/",
         icon: "home",
       },
@@ -40,12 +42,19 @@ export const shellService = {
         icon: "plus-square",
         matchPrefixes: ["/create"],
       },
-      {
-        label: "Profile",
-        href: buildProfileHref(username),
-        icon: "user-round",
-        matchPrefixes: username ? [`/u/${username}`] : undefined,
-      },
+      profileHref
+        ? {
+            label: "Profile",
+            href: profileHref,
+            icon: "user-round",
+            matchPrefixes: [profileHref],
+          }
+        : {
+            label: "Login",
+            href: "/login",
+            icon: "user-round",
+            matchPrefixes: ["/login"],
+          },
     ];
   },
 

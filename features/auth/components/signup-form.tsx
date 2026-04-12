@@ -1,10 +1,16 @@
 "use client";
 
 import type { FormEvent } from "react";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthFormCard } from "@/features/auth/components/auth-form-card";
 import { AuthHeader } from "@/features/auth/components/auth-header";
 import { AuthSwitchLink } from "@/features/auth/components/auth-switch-link";
+import {
+  buildAuthRedirectHref,
+  resolveRedirectTo,
+} from "@/lib/session/redirect";
 
 import { useSignup } from "../hooks/use-signup";
 import { ConfirmPasswordInputField } from "./confirm-password-input-field";
@@ -15,6 +21,8 @@ import { SignupSubmitButton } from "./signup-submit-button";
 import { UsernameInputField } from "./username-input-field";
 
 export function SignupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     username,
     email,
@@ -27,12 +35,23 @@ export function SignupForm() {
     formError,
     isFormValid,
     isLoading,
+    signupUser,
     setUsername,
     setEmail,
     setPassword,
     setConfirmPassword,
     signup,
   } = useSignup();
+  const redirectTo = resolveRedirectTo(searchParams.get("redirect"));
+  const loginHref = buildAuthRedirectHref("/login", redirectTo);
+
+  useEffect(() => {
+    if (!signupUser) {
+      return;
+    }
+
+    router.replace(redirectTo);
+  }, [redirectTo, router, signupUser]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,8 +62,8 @@ export function SignupForm() {
     <AuthFormCard>
       <div className="flex flex-col gap-6">
         <AuthHeader
-          title="짧은 정보만 정확히 입력하고 바로 계정을 만드세요."
-          description="유저 이름, 이메일, 비밀번호를 한 번에 정리하고 같은 흐름 안에서 회원가입을 완료합니다."
+          title="Create an account and enter the protected routes."
+          description="Signup also creates a mock session, so the profile page opens right after registration."
         />
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <UsernameInputField
@@ -81,9 +100,9 @@ export function SignupForm() {
           />
         </form>
         <AuthSwitchLink
-          label="이미 계정이 있나요?"
-          href="/login"
-          actionLabel="로그인"
+          label="Already have an account?"
+          href={loginHref}
+          actionLabel="Log in"
         />
       </div>
     </AuthFormCard>

@@ -33,7 +33,7 @@ export function FoundationScreen({
         radius="xl"
         bordered
         elevated
-        className="overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.75))]"
+        className="overflow-hidden bg-[linear-gradient(180deg,var(--ds-ui-surface),var(--ds-ui-surface-muted))]"
       >
         <CardHeader className="gap-5">
           <div className="flex flex-wrap items-center gap-2">
@@ -47,10 +47,10 @@ export function FoundationScreen({
           <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr] xl:items-end">
             <div className="space-y-4">
               <div className="space-y-3">
-                <h1 className="max-w-3xl font-display text-4xl leading-[1.02] tracking-[-0.06em] text-[var(--ds-color-primary-900)] lg:text-6xl">
+                <h1 className="max-w-3xl font-display text-4xl leading-[1.02] tracking-[-0.06em] text-[var(--ds-ui-text-primary)] lg:text-6xl">
                   {title}
                 </h1>
-                <p className="max-w-2xl text-sm leading-7 text-[var(--ds-color-neutral-600)] lg:text-base">
+                <p className="max-w-2xl text-sm leading-7 text-[var(--ds-ui-text-secondary)] lg:text-base">
                   {description}
                 </p>
               </div>
@@ -79,12 +79,12 @@ export function FoundationScreen({
               {highlights.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-[24px] border border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-50)] px-4 py-4"
+                  className="rounded-[24px] border border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface-muted)] px-4 py-4"
                 >
-                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ds-color-neutral-500)]">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--ds-ui-text-muted)]">
                     {item.label}
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-[var(--ds-color-primary-900)]">
+                  <p className="mt-2 text-sm font-semibold text-[var(--ds-ui-text-primary)]">
                     {item.value}
                   </p>
                 </div>
@@ -95,27 +95,27 @@ export function FoundationScreen({
         <CardContent className="space-y-5">
           <Divider />
           <div className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-[24px] border border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] p-4">
-              <p className="text-sm font-semibold text-[var(--ds-color-primary-900)]">
+            <div className="rounded-[24px] border border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--ds-ui-text-primary)]">
                 Header + Content
               </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--ds-color-neutral-600)]">
+              <p className="mt-2 text-sm leading-6 text-[var(--ds-ui-text-secondary)]">
                 스티키 헤더와 읽기 좋은 본문 폭을 한 구조로 고정합니다.
               </p>
             </div>
-            <div className="rounded-[24px] border border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] p-4">
-              <p className="text-sm font-semibold text-[var(--ds-color-primary-900)]">
+            <div className="rounded-[24px] border border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--ds-ui-text-primary)]">
                 Mobile + Desktop
               </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--ds-color-neutral-600)]">
+              <p className="mt-2 text-sm leading-6 text-[var(--ds-ui-text-secondary)]">
                 모바일 시트형 내비와 데스크톱 사이드바가 같은 정보 구조를 공유합니다.
               </p>
             </div>
-            <div className="rounded-[24px] border border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] p-4">
-              <p className="text-sm font-semibold text-[var(--ds-color-primary-900)]">
+            <div className="rounded-[24px] border border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] p-4">
+              <p className="text-sm font-semibold text-[var(--ds-ui-text-primary)]">
                 Route-aware shell
               </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--ds-color-neutral-600)]">
+              <p className="mt-2 text-sm leading-6 text-[var(--ds-ui-text-secondary)]">
                 서브 라우트에서는 뒤로가기와 상세 레이아웃 톤이 함께 반응합니다.
               </p>
             </div>

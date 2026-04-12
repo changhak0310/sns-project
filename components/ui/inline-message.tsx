@@ -5,13 +5,13 @@ import { cn } from "@/lib/utils/cn";
 
 const toneStyles = {
   neutral:
-    "border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-100)] text-[var(--ds-color-neutral-700)]",
+    "border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface-soft)] text-[var(--ds-ui-text-secondary)]",
   success:
-    "border-transparent bg-[var(--ds-color-success-100)] text-[var(--ds-color-success-500)]",
+    "border-transparent bg-[var(--ds-ui-success-soft-bg)] text-[var(--ds-ui-success-soft-text)]",
   warning:
-    "border-transparent bg-[var(--ds-color-warning-100)] text-[var(--ds-color-warning-600)]",
+    "border-transparent bg-[var(--ds-ui-warning-soft-bg)] text-[var(--ds-ui-warning-soft-text)]",
   error:
-    "border-transparent bg-[var(--ds-color-error-100)] text-[var(--ds-color-error-500)]",
+    "border-transparent bg-[var(--ds-ui-error-soft-bg)] text-[var(--ds-ui-error-soft-text)]",
 } as const;
 
 const toneIcons = {

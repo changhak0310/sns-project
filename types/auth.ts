@@ -7,6 +7,11 @@ export type User = {
   accessToken: string;
 };
 
+export type SessionUser = Pick<
+  User,
+  "id" | "email" | "username" | "name" | "avatarUrl"
+>;
+
 export type AuthResult =
   | {
       success: true;
@@ -93,14 +98,6 @@ export type LoginActions = {
 };
 
 export type UseLoginReturn = LoginState & LoginActions;
-
-export type SessionUser = {
-  id: number;
-  email: string;
-  username: string;
-  name: string;
-  avatarUrl?: string;
-};
 
 export type AuthActionAreaProps = {
   loginHref: string;

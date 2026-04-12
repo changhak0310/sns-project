@@ -26,14 +26,14 @@ export function ImageFallback({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[var(--ds-radius-lg)] border border-dashed border-[var(--ds-border-subtle)] bg-[linear-gradient(135deg,var(--ds-color-neutral-100),var(--ds-color-neutral-0))]",
+        "relative overflow-hidden rounded-[var(--ds-radius-lg)] border border-dashed border-[var(--ds-ui-border-subtle)] bg-[linear-gradient(135deg,var(--ds-ui-surface-muted),var(--ds-ui-surface))]",
         ratioClasses[ratio],
         className
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,149,112,0.18),transparent_35%)]" />
-      <div className="relative flex h-full flex-col items-center justify-center gap-2 text-center text-[var(--ds-color-neutral-500)]">
-        <span className="inline-flex size-10 items-center justify-center rounded-full bg-[var(--ds-color-neutral-0)] shadow-[var(--ds-shadow-sm)]">
+      <div className="relative flex h-full flex-col items-center justify-center gap-2 text-center text-[var(--ds-ui-text-muted)]">
+        <span className="inline-flex size-10 items-center justify-center rounded-full bg-[var(--ds-ui-surface-soft)] shadow-[var(--ds-ui-shadow-sm)]">
           {icon ?? <ImageOff className="size-4" aria-hidden />}
         </span>
         <p className="text-sm font-medium">{label}</p>
