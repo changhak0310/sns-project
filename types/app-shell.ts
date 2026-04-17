@@ -9,6 +9,8 @@ export type NavItem = {
   matchPrefixes?: string[];
 };
 
+export type ShellTheme = "dark" | "light";
+
 export type ShellLayoutConfig = {
   showHeader: boolean;
   showMobileNav: boolean;
@@ -34,6 +36,7 @@ export type ShellFrameProps = {
   mobileNav?: ReactNode;
   desktopSidebar?: ReactNode;
   modal?: ReactNode;
+  shellTheme?: ShellTheme;
   onCloseMobileNav?: () => void;
 };
 
@@ -58,6 +61,8 @@ export type DesktopSidebarProps = {
   sessionUser: SessionUser | null;
   accountActionArea?: ReactNode;
   onToggleCollapse: () => void;
+  shellTheme: ShellTheme;
+  onToggleTheme: () => void;
 };
 
 export type AppShellState = {

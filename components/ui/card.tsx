@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils/cn";
 
 const cardVariants = cva(
-  "rounded-[var(--ds-radius-xl)] bg-[var(--ds-color-neutral-0)]",
+  "rounded-[var(--ds-radius-xl)] bg-[var(--ds-ui-surface)]",
   {
     variants: {
       padding: {
@@ -19,15 +19,15 @@ const cardVariants = cva(
         xl: "rounded-[var(--ds-radius-xl)]",
       },
       bordered: {
-        true: "border border-[var(--ds-border-subtle)]",
+        true: "border border-[var(--ds-ui-border-subtle)]",
         false: "border border-transparent",
       },
       elevated: {
-        true: "shadow-[var(--ds-shadow-sm)]",
+        true: "shadow-[var(--ds-ui-shadow-sm)]",
         false: "",
       },
       interactive: {
-        true: "transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[var(--ds-shadow-md)]",
+        true: "transition-[transform,box-shadow,border-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[var(--ds-ui-shadow-md)]",
         false: "",
       },
     },
@@ -76,7 +76,7 @@ function CardTitle({
   return (
     <h3
       className={cn(
-        "text-lg font-semibold tracking-[-0.03em] text-[var(--ds-color-primary-900)]",
+        "text-lg font-semibold tracking-[-0.03em] text-[var(--ds-ui-text-primary)]",
         className
       )}
       {...props}
@@ -90,7 +90,7 @@ function CardDescription({
 }: React.ComponentPropsWithoutRef<"p">) {
   return (
     <p
-      className={cn("text-sm leading-6 text-[var(--ds-color-neutral-600)]", className)}
+      className={cn("text-sm leading-6 text-[var(--ds-ui-text-secondary)]", className)}
       {...props}
     />
   );

@@ -6,19 +6,23 @@ export function ShellFrame({
   mobileNav,
   desktopSidebar,
   modal,
+  shellTheme = "dark",
   onCloseMobileNav,
 }: ShellFrameProps) {
   return (
-    <div className="relative min-h-screen bg-background">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,149,112,0.12),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.34),transparent_28%)]" />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-[1440px] gap-0 lg:px-4 lg:py-4">
+    <div
+      data-shell-theme={shellTheme}
+      className="relative min-h-screen bg-[var(--ds-shell-bg)] text-[var(--ds-shell-text)]"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_24%),radial-gradient(circle_at_78%_10%,rgba(239,109,71,0.18),transparent_18%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_32%)]" />
+      <div className="relative mx-auto flex min-h-screen w-full max-w-[1600px]">
         {desktopSidebar ? (
-          <div className="hidden lg:sticky lg:top-0 lg:block lg:self-start">
+          <div className="hidden lg:block lg:shrink-0">
             {desktopSidebar}
           </div>
         ) : null}
 
-        <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:overflow-hidden lg:rounded-[36px] lg:border lg:border-[var(--ds-border-subtle)] lg:bg-[rgba(255,255,255,0.68)] lg:shadow-[var(--ds-shadow-md)] lg:backdrop-blur-xl">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           {header ? <div className="sticky top-0 z-20">{header}</div> : null}
           <main className="flex-1 pb-8 lg:pb-10">{children}</main>
         </div>
@@ -29,8 +33,8 @@ export function ShellFrame({
           <button
             type="button"
             onClick={onCloseMobileNav}
-            className="fixed inset-0 z-30 bg-[var(--color-overlay)] backdrop-blur-sm lg:hidden"
-            aria-label="모바일 메뉴 닫기"
+            className="fixed inset-0 z-30 bg-[var(--ds-shell-overlay)] backdrop-blur-sm lg:hidden"
+            aria-label="Close navigation"
           />
           <div className="fixed inset-x-0 bottom-0 z-40 lg:hidden">
             {mobileNav}

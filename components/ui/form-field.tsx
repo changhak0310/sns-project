@@ -26,14 +26,14 @@ export function FormField({
       {label ? (
         <label
           htmlFor={htmlFor}
-          className="text-sm font-medium text-[var(--ds-color-neutral-900)]"
+          className="text-sm font-medium text-[var(--ds-ui-text-primary)]"
         >
           {label}
           {required ? <span className="ml-1 text-[var(--ds-color-accent-500)]">*</span> : null}
         </label>
       ) : null}
       {description ? (
-        <p className="text-sm leading-6 text-[var(--ds-color-neutral-600)]">{description}</p>
+        <p className="text-sm leading-6 text-[var(--ds-ui-text-secondary)]">{description}</p>
       ) : null}
       {children}
       {error ? (

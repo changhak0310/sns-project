@@ -5,21 +5,24 @@ import { cn } from "@/lib/utils/cn";
 type AuthShellProps = {
   children: ReactNode;
   mood?: "focus" | "focus-dark";
+  viewportCentered?: boolean;
   className?: string;
 };
 
 export function AuthShell({
   children,
   mood = "focus",
+  viewportCentered = false,
   className,
 }: AuthShellProps) {
   const isDark = mood === "focus-dark";
 
   return (
-    <section
+    <section 
       data-mood={mood}
       className={cn(
-        "relative flex min-h-[560px] items-center justify-center overflow-hidden rounded-[var(--ds-radius-xl)] border px-4 py-10 sm:px-6",
+        "relative flex w-full items-center justify-center overflow-hidden rounded-[var(--ds-radius-xl)] border px-4 py-10 sm:px-6",
+        viewportCentered ? "min-h-dvh" : "min-h-[560px]",
         isDark
           ? "border-[rgba(255,255,255,0.08)] bg-[var(--ds-mood-focus-dark-bg)] text-[var(--ds-mood-focus-dark-fg)]"
           : "border-[var(--ds-border-subtle)] bg-[var(--ds-mood-focus-bg)] text-[var(--ds-color-primary-900)]",

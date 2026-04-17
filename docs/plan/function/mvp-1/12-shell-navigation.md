@@ -6,6 +6,7 @@
 인스타그램처럼 모바일은 하단 탭을 기본으로 두고, 데스크톱은 왼쪽 사이드바를 기본으로 둔다.
 `showBottomTabBar`, `showDesktopSidebar`는 현재 경로에서 해당 셸 요소를 사용할 수 있는지 나타내며, 실제 렌더링은 viewport 기준으로 모바일에서는 `BottomTabBar`, 데스크톱에서는 `DesktopSidebar`만 노출한다.
 `layoutRule`, `navItems`, `activeNavKey`, `headerTitle`, `backFallbackHref`는 현재 경로와 세션 사용자명 기준 파생값으로 계산한다.
+데스크톱 사이드바는 내비게이션 외에 `Theme` 토글을 포함할 수 있으며, 실제 테마 상태는 별도 `useShellTheme()` 훅에서 관리한다.
 
 ### A. 타입 정의
 
@@ -159,6 +160,8 @@ type DesktopSidebarProps = {
   activeNavKey: ShellNavKey | "";
   collapsed: boolean;
   onToggleCollapse: () => void;
+  shellTheme: "dark" | "light";
+  onToggleTheme: () => void;
   footerSlot?: ReactNode;
 };
 ```
@@ -203,7 +206,7 @@ type BackButtonProps = {
 | `ShellNavigationLayer` | 현재 경로 기준 셸 규칙, 활성 탭, 헤더 제목, 뒤로가기 fallback, 사이드바 축소 상태를 한 번에 조합한다. `navItems` 중 `emphasis = "primary"` 항목은 `PrimaryComposeButton`으로, 나머지는 `ShellNavLink`로 분리해 전달한다. | `useShellNavigation()` | <a href="#type-shell-navigation-layer-props"><code>ShellNavigationLayerProps</code></a> | `onUnmount -> resetShellNavigationState()` | `isDesktopSidebarCollapsed` |
 | `AppHeader` | 상단 헤더에서 제목, 뒤로가기 버튼, 오른쪽 액션 슬롯을 렌더링한다. | 없음 | <a href="#type-app-header-props"><code>AppHeaderProps</code></a> | `BackButton.onClick -> onBack?.()` | 없음 |
 | `BottomTabBar` | 모바일 하단 고정 탭을 렌더링한다. `navItems` 중 `emphasis = "default"`는 `ShellNavLink`로, `emphasis = "primary"`는 `PrimaryComposeButton`으로 렌더링한다. | 없음 | <a href="#type-bottom-tab-bar-props"><code>BottomTabBarProps</code></a> | 없음 | 없음 |
-| `DesktopSidebar` | 데스크톱 왼쪽 사이드바를 렌더링하고 축소 토글을 처리한다. `navItems` 중 `emphasis = "default"`는 `ShellNavLink`로, `emphasis = "primary"`는 `PrimaryComposeButton`으로 렌더링한다. | 없음 | <a href="#type-desktop-sidebar-props"><code>DesktopSidebarProps</code></a> | `onToggleCollapse -> onToggleCollapse()` | 없음 |
+| `DesktopSidebar` | 데스크톱 왼쪽 사이드바를 렌더링하고 축소 토글과 테마 전환을 처리한다. `navItems` 중 `emphasis = "default"`는 `ShellNavLink`로, `emphasis = "primary"`는 `PrimaryComposeButton`으로 렌더링한다. | 없음 | <a href="#type-desktop-sidebar-props"><code>DesktopSidebarProps</code></a> | `onToggleCollapse -> onToggleCollapse()`, `onToggleTheme -> onToggleTheme()` | 없음 |
 | `ShellNavLink` | 기본 네비게이션 링크를 렌더링하고 활성 상태를 표시한다. | 없음 | <a href="#type-shell-nav-link-props"><code>ShellNavLinkProps</code></a> | 없음 | 없음 |
 | `PrimaryComposeButton` | 작성 진입 버튼을 기본 탭보다 더 강조된 스타일로 렌더링한다. | 없음 | <a href="#type-primary-compose-button-props"><code>PrimaryComposeButtonProps</code></a> | 없음 | 없음 |
 | `BackButton` | 상세나 서브 라우트에서 뒤로가기를 실행하고, 히스토리가 없으면 fallback 경로로 이동한다. | 없음 | <a href="#type-back-button-props"><code>BackButtonProps</code></a> | `onClick -> onClick()` | 없음 |
@@ -300,6 +303,8 @@ type UseShellNavigationReturn = ShellNavigationState &
 - `useShellNavigation()`
   - `pathname`, `username`을 기준으로 `layoutRule`, `navItems`, `activeNavKey`, `headerTitle`, `backFallbackHref`를 계산한다.
   - `layoutRule.showBottomTabBar = true`와 `layoutRule.showDesktopSidebar = true`는 메인 셸 경로에서 두 UI를 사용할 수 있다는 뜻이며, 실제 렌더링은 viewport 기준으로 모바일은 하단 탭, 데스크톱은 왼쪽 사이드바를 사용한다.
+- `DesktopSidebar`
+  - 현재 `shellTheme`을 표시하고 `onToggleTheme()`으로 라이트/다크 셸 전환을 노출할 수 있다.
 - `toggleDesktopSidebar()`
   - `isDesktopSidebarCollapsed` 값을 반전한다.
 - `goBackOrFallback()`
@@ -361,6 +366,7 @@ type UseShellNavigationReturn = ShellNavigationState &
   - 프로필 항목은 `buildProfileHref(username)`를 사용한다.
   - 작성 항목은 `emphasis = "primary"`로 계산한다.
   - `ShellNavigationLayer`, `BottomTabBar`, `DesktopSidebar`는 `emphasis = "primary"` 항목을 `PrimaryComposeButton`으로, 나머지를 `ShellNavLink`로 분리해 렌더링한다.
+  - `DesktopSidebar`는 내비게이션 목록과 별도로 `Theme` 토글 액션을 footer 영역에 배치할 수 있다.
 - `getActiveNavKey()`
   - `pathname`과 `matchPrefixes`를 비교해 활성 탭을 계산한다.
   - 다른 사람 프로필처럼 현재 네비와 직접 일치하지 않는 경로는 `""`를 반환한다.

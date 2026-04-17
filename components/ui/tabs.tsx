@@ -9,10 +9,10 @@ const tabsListVariants = cva("inline-flex items-center gap-2", {
   variants: {
     variant: {
       underline:
-        "w-full border-b border-[var(--ds-border-subtle)] pb-1 [&>*]:rounded-t-2xl",
-      pill: "rounded-full bg-[var(--ds-color-neutral-100)] p-1",
+        "w-full border-b border-[var(--ds-ui-border-subtle)] pb-1 [&>*]:rounded-t-2xl",
+      pill: "rounded-full bg-[var(--ds-ui-surface-soft)] p-1",
       segmented:
-        "rounded-[var(--ds-radius-full)] border border-[var(--ds-border-subtle)] p-1",
+        "rounded-[var(--ds-radius-full)] border border-[var(--ds-ui-border-subtle)] p-1",
     },
     size: {
       sm: "text-sm",
@@ -27,16 +27,16 @@ const tabsListVariants = cva("inline-flex items-center gap-2", {
 });
 
 const tabsTriggerVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 font-medium transition-[background-color,color,border-color] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-color-neutral-0)] disabled:pointer-events-none disabled:opacity-45",
+  "inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 font-medium transition-[background-color,color,border-color] duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-[var(--ds-color-accent-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ds-ui-focus-offset)] disabled:pointer-events-none disabled:opacity-45",
   {
     variants: {
       variant: {
         underline:
-          "border-b-2 border-transparent rounded-none px-1 pb-3 pt-2 text-[var(--ds-color-neutral-500)] data-[active=true]:border-[var(--ds-color-primary-900)] data-[active=true]:text-[var(--ds-color-primary-900)]",
+          "border-b-2 border-transparent rounded-none px-1 pb-3 pt-2 text-[var(--ds-ui-text-muted)] data-[active=true]:border-[var(--ds-ui-text-primary)] data-[active=true]:text-[var(--ds-ui-text-primary)]",
         pill:
-          "text-[var(--ds-color-neutral-600)] data-[active=true]:bg-[var(--ds-color-neutral-0)] data-[active=true]:text-[var(--ds-color-primary-900)] data-[active=true]:shadow-[var(--ds-shadow-sm)]",
+          "text-[var(--ds-ui-text-secondary)] data-[active=true]:bg-[var(--ds-ui-surface)] data-[active=true]:text-[var(--ds-ui-text-primary)] data-[active=true]:shadow-[var(--ds-ui-shadow-sm)]",
         segmented:
-          "text-[var(--ds-color-neutral-600)] data-[active=true]:bg-[var(--ds-color-primary-900)] data-[active=true]:text-[var(--ds-color-neutral-0)]",
+          "text-[var(--ds-ui-text-secondary)] data-[active=true]:bg-[var(--ds-ui-primary-bg)] data-[active=true]:text-[var(--ds-ui-primary-text)]",
       },
       size: {
         sm: "min-h-9 text-sm",

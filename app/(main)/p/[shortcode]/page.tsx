@@ -30,7 +30,7 @@ export default async function PostDetailPage({
       ]}
     >
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+        <Card bordered elevated className="bg-[var(--ds-ui-surface)]">
           <CardContent className="space-y-4">
             <ImageFallback ratio="portrait" label="Permalink media" />
             <div className="flex items-center gap-2">
@@ -38,13 +38,13 @@ export default async function PostDetailPage({
                 detail
               </Badge>
               <Badge variant="outline" tone="neutral">
-                /p/{shortcode}
+                {`/p/${shortcode}`}
               </Badge>
             </div>
           </CardContent>
         </Card>
         <div className="space-y-4">
-          <Card bordered elevated className="bg-[var(--ds-color-neutral-0)]">
+          <Card bordered elevated className="bg-[var(--ds-ui-surface)]">
             <CardHeader>
               <CardTitle>Detail Shell</CardTitle>
               <CardDescription>
@@ -64,12 +64,12 @@ export default async function PostDetailPage({
               </Badge>
             </CardContent>
           </Card>
-          <Card bordered elevated className="bg-[var(--ds-color-neutral-50)]">
+          <Card bordered elevated className="bg-[var(--ds-ui-surface-muted)]">
             <CardHeader>
               <CardTitle>Shortcode</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-mono text-lg font-semibold text-[var(--ds-color-primary-900)]">
+              <p className="font-mono text-lg font-semibold text-[var(--ds-ui-text-primary)]">
                 {shortcode}
               </p>
             </CardContent>

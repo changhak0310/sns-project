@@ -4,24 +4,23 @@ import type {
   SignupApiResponse,
   User,
 } from "@/types/auth";
+import type { ApiResponse } from "@/types/api";
 
 type AuthApiResponse = LoginApiResponse | SignupApiResponse;
-type AuthResponsePayload = {
-  success?: boolean;
-  data?: User;
-  message?: string;
-};
 
 async function parseAuthResponse<T extends AuthApiResponse>(
   response: Response
 ): Promise<T> {
+  const status = response?.status ?? 0;
   const fallbackMessage =
-    response.status >= 500
-      ? "서버 오류가 발생했습니다."
-      : "네트워크 오류가 발생했습니다. 다시 시도해주세요.";
+    status >= 500
+      ? "?쒕쾭 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."
+      : status >= 400
+        ? "?섎せ???붿껌?낅땲?? ?낅젰???뺤씤?댁＜?몄슂."
+        : "?ㅽ듃?뚰겕 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎. ?ㅼ떆 ?쒕룄?댁＜?몄슂.";
 
   try {
-    const payload = (await response.json()) as AuthResponsePayload;
+    const payload = (await response.json()) as ApiResponse<User>;
 
     if (payload.success === true && payload.data) {
       return {
@@ -54,8 +53,8 @@ async function parseLogoutResponse(
 ): Promise<LogoutApiResponse> {
   const fallbackMessage =
     response.status >= 500
-      ? "서버 오류가 발생했습니다."
-      : "네트워크 오류가 발생했습니다. 다시 시도해주세요.";
+      ? "?쒕쾭 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎."
+      : "?ㅽ듃?뚰겕 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎. ?ㅼ떆 ?쒕룄?댁＜?몄슂.";
 
   try {
     const payload = (await response.json()) as Partial<LogoutApiResponse>;
@@ -99,7 +98,7 @@ async function parseLogoutResponse(
 
 export const authRepository = {
   async login(email: string, password: string): Promise<LoginApiResponse> {
-    const response = await fetch("/api/auth/login", {
+    const response = await fetch("/api/v1/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -126,7 +125,7 @@ export const authRepository = {
     email: string,
     password: string
   ): Promise<SignupApiResponse> {
-    const response = await fetch("/api/auth/signup", {
+    const response = await fetch("/api/v1/auth/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

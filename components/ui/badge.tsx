@@ -21,7 +21,7 @@ const badgeVariants = cva(
         error: "",
       },
       size: {
-        sm: "px-2.5 py-1 text-[11px]",
+        sm: "px-1.5 py-0.5 text-[8px]",
         md: "px-3 py-1.5 text-xs",
       },
     },
@@ -30,19 +30,19 @@ const badgeVariants = cva(
         variant: "solid",
         tone: "neutral",
         className:
-          "bg-[var(--ds-color-primary-900)] text-[var(--ds-color-neutral-0)]",
+          "bg-[var(--ds-ui-primary-bg)] text-[var(--ds-ui-primary-text)]",
       },
       {
         variant: "soft",
         tone: "neutral",
         className:
-          "bg-[var(--ds-color-neutral-100)] text-[var(--ds-color-neutral-700)]",
+          "bg-[var(--ds-ui-neutral-soft-bg)] text-[var(--ds-ui-neutral-soft-text)]",
       },
       {
         variant: "outline",
         tone: "neutral",
         className:
-          "border-[var(--ds-border-subtle)] text-[var(--ds-color-neutral-700)]",
+          "border-[var(--ds-ui-border-subtle)] text-[var(--ds-ui-text-secondary)]",
       },
       {
         variant: "solid",
@@ -54,31 +54,31 @@ const badgeVariants = cva(
         variant: "soft",
         tone: "accent",
         className:
-          "bg-[var(--ds-color-accent-100)] text-[var(--ds-color-accent-500)]",
+          "bg-[var(--ds-ui-accent-soft-bg)] text-[var(--ds-ui-accent-soft-text)]",
       },
       {
         variant: "outline",
         tone: "accent",
         className:
-          "border-[var(--ds-color-accent-300)] text-[var(--ds-color-accent-500)]",
+          "border-[var(--ds-color-accent-300)] text-[var(--ds-ui-accent-soft-text)]",
       },
       {
         variant: "soft",
         tone: "success",
         className:
-          "bg-[var(--ds-color-success-100)] text-[var(--ds-color-success-500)]",
+          "bg-[var(--ds-ui-success-soft-bg)] text-[var(--ds-ui-success-soft-text)]",
       },
       {
         variant: "soft",
         tone: "warning",
         className:
-          "bg-[var(--ds-color-warning-100)] text-[var(--ds-color-warning-600)]",
+          "bg-[var(--ds-ui-warning-soft-bg)] text-[var(--ds-ui-warning-soft-text)]",
       },
       {
         variant: "soft",
         tone: "error",
         className:
-          "bg-[var(--ds-color-error-100)] text-[var(--ds-color-error-500)]",
+          "bg-[var(--ds-ui-error-soft-bg)] text-[var(--ds-ui-error-soft-text)]",
       },
     ],
     defaultVariants: {

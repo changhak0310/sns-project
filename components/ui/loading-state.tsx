@@ -22,7 +22,7 @@ export function LoadingState({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[var(--ds-radius-xl)] border border-[var(--ds-border-subtle)] bg-[var(--ds-color-neutral-0)] p-5 shadow-[var(--ds-shadow-sm)]",
+        "overflow-hidden rounded-[var(--ds-radius-xl)] border border-[var(--ds-ui-border-subtle)] bg-[var(--ds-ui-surface)] p-5 shadow-[var(--ds-ui-shadow-sm)]",
         className
       )}
       aria-hidden
@@ -31,17 +31,17 @@ export function LoadingState({
         {variant === "card" ? (
           <div
             className={cn(
-              "rounded-[var(--ds-radius-lg)] bg-[var(--ds-color-neutral-100)]",
+              "rounded-[var(--ds-radius-lg)] bg-[var(--ds-ui-surface-soft)]",
               mediaRatioClasses[mediaRatio]
             )}
           />
         ) : null}
         {variant === "list" ? (
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-full bg-[var(--ds-color-neutral-100)]" />
+            <div className="size-11 rounded-full bg-[var(--ds-ui-surface-soft)]" />
             <div className="flex-1 space-y-2">
-              <div className="h-3 w-32 rounded-full bg-[var(--ds-color-neutral-100)]" />
-              <div className="h-3 w-48 rounded-full bg-[var(--ds-color-neutral-100)]" />
+              <div className="h-3 w-32 rounded-full bg-[var(--ds-ui-surface-soft)]" />
+              <div className="h-3 w-48 rounded-full bg-[var(--ds-ui-surface-soft)]" />
             </div>
           </div>
         ) : null}
@@ -49,7 +49,7 @@ export function LoadingState({
           {Array.from({ length: lines }).map((_, index) => (
             <div
               key={index}
-              className="h-3 rounded-full bg-[var(--ds-color-neutral-100)]"
+              className="h-3 rounded-full bg-[var(--ds-ui-surface-soft)]"
               style={{ width: `${Math.max(55, 100 - index * 12)}%` }}
             />
           ))}
